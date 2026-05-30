@@ -67,13 +67,19 @@ const downloadButton = document.querySelector("#downloadButton");
 const metricVisits = document.querySelector("#metricVisits");
 const metricReports = document.querySelector("#metricReports");
 const metricSubmissions = document.querySelector("#metricSubmissions");
+const metricUniqueIps = document.querySelector("#metricUniqueIps");
 const metricConversion = document.querySelector("#metricConversion");
+const metricIpVisits = document.querySelector("#metricIpVisits");
+const metricCountryCount = document.querySelector("#metricCountryCount");
+const metricCityCount = document.querySelector("#metricCityCount");
 const metricAvgCopyLength = document.querySelector("#metricAvgCopyLength");
 const metricClientRate = document.querySelector("#metricClientRate");
 const metricImageRate = document.querySelector("#metricImageRate");
 const metricRiskRate = document.querySelector("#metricRiskRate");
 const platformChart = document.querySelector("#platformChart");
 const involvementChart = document.querySelector("#involvementChart");
+const ipChart = document.querySelector("#ipChart");
+const ipList = document.querySelector("#ipList");
 const keywordChart = document.querySelector("#keywordChart");
 const submissionList = document.querySelector("#submissionList");
 const eventList = document.querySelector("#eventList");
@@ -84,15 +90,24 @@ const clearSubmissionsButton = document.querySelector("#clearSubmissionsButton")
 
 let currentReport = null;
 let adminPassword = "";
+let clientInfo = {
+  ip: "",
+  country: "",
+  region: "",
+  city: "",
+  userAgent: navigator.userAgent,
+};
 
 initApp();
 
 async function initApp() {
   adminPassword = await loadAdminPassword();
+  clientInfo = await loadClientInfo();
   initRoute();
   trackEvent("page_view", {
     ruleVersion: RULE_VERSION,
     adminEntry: isAdminEntry(),
+    ...clientInfo,
   });
   renderAnalytics();
 }
@@ -138,6 +153,10 @@ form.addEventListener("submit", async (event) => {
     copyLength: currentReport.publishCopyLength,
     isClientCampaign: currentReport.isClientCampaign,
     savedSubmission: saveSubmissionInput.checked,
+    ip: clientInfo.ip,
+    country: clientInfo.country,
+    region: clientInfo.region,
+    city: clientInfo.city,
   });
   renderAnalytics();
 });
@@ -562,6 +581,39 @@ async function loadAdminPassword() {
   }
 }
 
+async function loadClientInfo() {
+  if (!isHostedHttp()) {
+    return {
+      ip: "local",
+      country: "",
+      region: "",
+      city: "",
+      userAgent: navigator.userAgent,
+    };
+  }
+
+  try {
+    const response = await fetch("/api/client-info", { cache: "no-store" });
+    if (!response.ok) throw new Error("Client info unavailable");
+    const data = await response.json();
+    return {
+      ip: data.ip || "",
+      country: data.country || "",
+      region: data.region || "",
+      city: data.city || "",
+      userAgent: data.userAgent || navigator.userAgent,
+    };
+  } catch {
+    return {
+      ip: "",
+      country: "",
+      region: "",
+      city: "",
+      userAgent: navigator.userAgent,
+    };
+  }
+}
+
 async function verifyAdminPassword(password) {
   if (isHostedHttp()) {
     try {
@@ -619,6 +671,10 @@ function renderAnalytics() {
   const visitCount = countByName(events, "page_view");
   const reportCount = countByName(events, "report_generated");
   const conversion = visitCount ? Math.round((reportCount / visitCount) * 100) : 0;
+  const ipVisits = events.filter((event) => event.properties.ip).length;
+  const uniqueIps = new Set(events.map((event) => event.properties.ip).filter(Boolean));
+  const uniqueCountries = new Set(events.map((event) => event.properties.country).filter(Boolean));
+  const uniqueCities = new Set(events.map((event) => event.properties.city).filter(Boolean));
   const avgCopyLength = submissions.length
     ? Math.round(sum(submissions.map((item) => item.copyLength)) / submissions.length)
     : 0;
@@ -629,7 +685,11 @@ function renderAnalytics() {
   metricVisits.textContent = String(visitCount);
   metricReports.textContent = String(reportCount);
   metricSubmissions.textContent = String(submissions.length);
+  metricUniqueIps.textContent = String(uniqueIps.size);
   metricConversion.textContent = `${conversion}%`;
+  metricIpVisits.textContent = String(ipVisits);
+  metricCountryCount.textContent = String(uniqueCountries.size);
+  metricCityCount.textContent = String(uniqueCities.size);
   metricAvgCopyLength.textContent = String(avgCopyLength);
   metricClientRate.textContent = `${clientRate}%`;
   metricImageRate.textContent = `${imageRate}%`;
@@ -647,6 +707,8 @@ function renderAnalytics() {
     involvementNames,
     "暂无 AI 参与程度数据",
   );
+  renderBarChart(ipChart, countProperty(events, "page_view", "ip"), {}, "暂无 IP 访问数据");
+  renderIpList(events);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
   renderEventList(events);
@@ -664,6 +726,11 @@ function saveSubmission(report) {
     hasImage: Boolean(report.media),
     copyLength: report.publishCopyLength,
     publishCopy: report.publishCopy,
+    ip: clientInfo.ip,
+    country: clientInfo.country,
+    region: clientInfo.region,
+    city: clientInfo.city,
+    userAgent: clientInfo.userAgent,
     fileName: report.media?.fileName || "",
     fileType: report.media?.fileType || "",
     fileSizeBytes: report.media?.fileSizeBytes || 0,
@@ -677,6 +744,10 @@ function saveSubmission(report) {
     aiInvolvement: report.aiInvolvement,
     status: report.status,
     copyLength: report.publishCopyLength,
+    ip: clientInfo.ip,
+    country: clientInfo.country,
+    region: clientInfo.region,
+    city: clientInfo.city,
   });
 }
 
@@ -744,6 +815,35 @@ function renderEventList(events) {
           <div>
             <strong>${escapeHtml(getEventLabel(event.name))}</strong>
             <div>${escapeHtml(properties || "-")}</div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderIpList(events) {
+  const recent = events
+    .filter((event) => event.name === "page_view" && event.properties.ip)
+    .reverse()
+    .slice(0, 12);
+
+  if (recent.length === 0) {
+    ipList.innerHTML = `<div class="empty-row">暂无 IP 访问数据</div>`;
+    return;
+  }
+
+  ipList.innerHTML = recent
+    .map((event) => {
+      const location = [event.properties.country, event.properties.region, event.properties.city]
+        .filter(Boolean)
+        .join(" / ");
+      return `
+        <div class="ip-item">
+          <strong>${escapeHtml(event.properties.ip)}</strong>
+          <div>
+            <span>${formatDateTime(event.timestamp)}</span>
+            <div>${escapeHtml(location || "未知位置")}</div>
           </div>
         </div>
       `;

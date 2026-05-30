@@ -394,6 +394,31 @@ button.danger {
   overflow: auto;
 }
 
+.ip-list {
+  display: grid;
+  gap: 8px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.ip-item {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.ip-item strong {
+  word-break: break-all;
+}
+
+.ip-item span {
+  color: var(--muted);
+}
+
 .submission-list {
   display: grid;
   gap: 10px;
@@ -541,7 +566,8 @@ button.danger {
   .metric-grid,
   .analysis-grid,
   .bar-row,
-  .event-item {
+  .event-item,
+  .ip-item {
     grid-template-columns: 1fr;
   }
 }
