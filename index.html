@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 内容发布前自查</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AIGC Publish Readiness</p>
+          <h1>AI 内容发布前自查</h1>
+        </div>
+      </header>
+
+      <section id="checkerPage" class="page active">
+        <section class="workspace">
+          <form id="checkForm" class="panel input-panel">
+            <div class="panel-header">
+              <p class="eyebrow">Step 1</p>
+              <h2>提交内容</h2>
+              <p class="summary">本地生成元数据摘要、披露建议和可存档 Markdown 报告。</p>
+            </div>
+
+            <label class="field">
+              <span>目标平台</span>
+              <select id="platform" name="platform">
+                <option value="generic_cn">通用中文平台</option>
+                <option value="xiaohongshu">小红书</option>
+                <option value="douyin">抖音</option>
+                <option value="wechat_official">微信公众号</option>
+                <option value="bilibili">Bilibili</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>AI 参与程度</span>
+              <select id="aiInvolvement" name="aiInvolvement">
+                <option value="assisted_editing">AI 辅助润色</option>
+                <option value="ai_draft_human_revised">AI 生成初稿，人工修改</option>
+                <option value="mostly_ai_generated">主要由 AI 生成</option>
+                <option value="unknown">不确定</option>
+                <option value="none">未使用 AI</option>
+              </select>
+            </label>
+
+            <label class="field check-row">
+              <input id="clientCampaign" type="checkbox" />
+              <span>这是品牌/客户发布内容</span>
+            </label>
+
+            <label class="field">
+              <span>图片文件</span>
+              <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+            </label>
+
+            <label class="field">
+              <span>待发布文案</span>
+              <textarea id="publishCopy" rows="9" placeholder="粘贴准备发布的标题、正文或说明..."></textarea>
+            </label>
+
+            <label class="field check-row consent-row">
+              <input id="saveSubmission" type="checkbox" />
+              <span>保存本次提交内容用于本地分析</span>
+            </label>
+
+            <div class="privacy-note">
+              不上传数据。勾选后会在本机保存文案原文和图片元信息，用来分析用户行为与内容习惯；不保存图片文件本身。
+            </div>
+
+            <div class="actions">
+              <button type="submit" class="primary">生成报告</button>
+              <button type="button" id="clearButton" class="secondary">清空</button>
+            </div>
+          </form>
+
+          <section class="panel report-panel">
+            <div class="panel-header compact">
+              <p class="eyebrow">Step 2</p>
+              <h2>检查结果</h2>
+            </div>
+
+            <div id="emptyState" class="empty-state">
+              选择平台、上传图片或粘贴文案后生成报告。
+            </div>
+
+            <div id="reportView" class="report-view hidden">
+              <div class="status-strip" id="statusStrip">
+                <span id="statusText">待检查</span>
+              </div>
+
+              <div class="report-section">
+                <h3>发布前要处理</h3>
+                <ul id="reasonList"></ul>
+              </div>
+
+              <div class="report-section">
+                <h3>建议披露文案</h3>
+                <div class="copy-box">
+                  <p id="disclosureText"></p>
+                  <button id="copyDisclosureButton" type="button">复制</button>
+                </div>
+              </div>
+
+              <div class="report-section">
+                <h3>文件信息</h3>
+                <dl id="metadataList" class="metadata-list"></dl>
+              </div>
+
+              <div class="report-section">
+                <h3>检查清单</h3>
+                <div id="checklist" class="checklist"></div>
+              </div>
+
+              <div class="actions">
+                <button id="downloadButton" type="button" class="primary">下载 Markdown</button>
+              </div>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <section id="adminPage" class="page">
+        <section class="admin-login-wrap">
+          <form id="adminLoginForm" class="panel admin-login-panel">
+            <div class="panel-header">
+              <p class="eyebrow">Admin</p>
+              <h2>管理员入口</h2>
+              <p class="summary">输入管理员密码后查看用户行为和提交内容分析。</p>
+            </div>
+
+            <label class="field">
+              <span>密码</span>
+              <input id="adminPassword" type="password" autocomplete="current-password" />
+            </label>
+
+            <div id="adminLoginError" class="error-text hidden">密码错误</div>
+
+            <div class="actions">
+              <button type="submit" class="primary">进入分析页</button>
+              <button id="backToCheckerButton" type="button" class="secondary">返回自查工具</button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section id="analyticsPage" class="page admin-only">
+        <section class="analytics-layout">
+          <section class="panel analytics-panel">
+            <div class="panel-header compact">
+              <p class="eyebrow">Overview</p>
+              <h2>用户行为分析</h2>
+            </div>
+
+            <div class="metric-grid">
+              <div class="metric-card">
+                <span>访问次数</span>
+                <strong id="metricVisits">0</strong>
+              </div>
+              <div class="metric-card">
+                <span>生成报告</span>
+                <strong id="metricReports">0</strong>
+              </div>
+              <div class="metric-card">
+                <span>保存提交</span>
+                <strong id="metricSubmissions">0</strong>
+              </div>
+              <div class="metric-card">
+                <span>转化率</span>
+                <strong id="metricConversion">0%</strong>
+              </div>
+            </div>
+
+            <div class="analysis-grid">
+              <div class="report-section">
+                <h3>平台偏好</h3>
+                <div id="platformChart" class="bar-list"></div>
+              </div>
+
+              <div class="report-section">
+                <h3>AI 参与程度</h3>
+                <div id="involvementChart" class="bar-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel analytics-panel">
+            <div class="panel-header compact">
+              <p class="eyebrow">Content</p>
+              <h2>提交内容分析</h2>
+            </div>
+
+            <div class="metric-grid">
+              <div class="metric-card">
+                <span>平均文案长度</span>
+                <strong id="metricAvgCopyLength">0</strong>
+              </div>
+              <div class="metric-card">
+                <span>客户内容占比</span>
+                <strong id="metricClientRate">0%</strong>
+              </div>
+              <div class="metric-card">
+                <span>上传图片占比</span>
+                <strong id="metricImageRate">0%</strong>
+              </div>
+              <div class="metric-card">
+                <span>高风险占比</span>
+                <strong id="metricRiskRate">0%</strong>
+              </div>
+            </div>
+
+            <div class="analysis-grid">
+              <div class="report-section">
+                <h3>高频词</h3>
+                <div id="keywordChart" class="tag-list"></div>
+              </div>
+
+              <div class="report-section">
+                <h3>最近提交</h3>
+                <div id="submissionList" class="submission-list"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel analytics-panel">
+            <div class="panel-header compact">
+              <p class="eyebrow">Events</p>
+              <h2>事件明细</h2>
+            </div>
+
+            <div id="eventList" class="event-list"></div>
+
+            <div class="actions analytics-actions">
+              <button id="exportAnalyticsButton" type="button" class="primary">导出埋点</button>
+              <button id="exportSubmissionsButton" type="button" class="secondary">导出提交内容</button>
+              <button id="clearAnalyticsButton" type="button" class="secondary">清空埋点</button>
+              <button id="clearSubmissionsButton" type="button" class="secondary danger">清空提交内容</button>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
