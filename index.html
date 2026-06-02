@@ -58,23 +58,23 @@
     <main class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">AIGC Publish Readiness</p>
+          <p class="eyebrow" data-i18n="brandEyebrow">AIGC Publish Readiness</p>
           <h1 data-i18n="appTitle">AI 内容发布前自查</h1>
         </div>
         <label class="language-control">
           <span data-i18n="languageLabel">语言</span>
-          <select id="languageSelect" aria-label="Language">
-            <option value="zh-CN">简体中文</option>
+          <select id="languageSelect" aria-label="Language" data-i18n-aria-label="languageLabel">
+            <option value="zh-CN" data-i18n="languageZh">简体中文</option>
             <option value="en">English</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="es">Español</option>
+            <option value="ja" data-i18n="languageJa">日本語</option>
+            <option value="ko" data-i18n="languageKo">한국어</option>
+            <option value="es" data-i18n="languageEs">Español</option>
           </select>
         </label>
       </header>
 
       <section id="checkerPage" class="page active">
-        <section class="seo-summary" aria-label="工具简介">
+        <section class="seo-summary" aria-label="工具简介" data-i18n-aria-label="seoSummaryAria">
           <h2 data-i18n="seoSummaryTitle">AI 内容发布前检查、AIGC 标识合规与图片元数据自查</h2>
           <p data-i18n="seoSummaryBody">
             这个工具面向创作者、品牌内容团队、代运营机构和电商商家，用于在发布 AI 辅助内容前检查
@@ -93,10 +93,10 @@
               <span data-i18n="targetPlatform">目标平台</span>
               <select id="platform" name="platform">
                 <option value="generic_cn" data-i18n="platformGeneric">通用中文平台</option>
-                <option value="xiaohongshu">小红书</option>
-                <option value="douyin">抖音</option>
-                <option value="wechat_official">微信公众号</option>
-                <option value="bilibili">Bilibili</option>
+                <option value="xiaohongshu" data-i18n="platformXiaohongshu">小红书</option>
+                <option value="douyin" data-i18n="platformDouyin">抖音</option>
+                <option value="wechat_official" data-i18n="platformWechatOfficial">微信公众号</option>
+                <option value="bilibili" data-i18n="platformBilibili">Bilibili</option>
               </select>
             </label>
 
@@ -191,7 +191,7 @@
         <section class="admin-login-wrap">
           <form id="adminLoginForm" class="panel admin-login-panel">
             <div class="panel-header">
-              <p class="eyebrow">Admin</p>
+              <p class="eyebrow" data-i18n="adminEyebrow">Admin</p>
               <h2 data-i18n="adminEntry">管理员入口</h2>
               <p class="summary" data-i18n="adminSummary">输入管理员密码后查看用户行为和提交内容分析。</p>
             </div>
@@ -215,7 +215,7 @@
         <section class="analytics-layout">
           <section class="panel analytics-panel">
             <div class="panel-header compact">
-              <p class="eyebrow">Overview</p>
+              <p class="eyebrow" data-i18n="overviewEyebrow">Overview</p>
               <h2 data-i18n="behaviorAnalytics">用户行为分析</h2>
               <p id="adminDataStatus" class="analytics-status">Local browser data</p>
             </div>
@@ -259,7 +259,7 @@
 
           <section class="panel analytics-panel">
             <div class="panel-header compact">
-              <p class="eyebrow">Traffic</p>
+              <p class="eyebrow" data-i18n="trafficEyebrow">Traffic</p>
               <h2 data-i18n="trafficAnalytics">访问来源分析</h2>
             </div>
 
@@ -307,7 +307,7 @@
 
           <section class="panel analytics-panel">
             <div class="panel-header compact">
-              <p class="eyebrow">Content</p>
+              <p class="eyebrow" data-i18n="contentEyebrow">Content</p>
               <h2 data-i18n="contentAnalytics">提交内容分析</h2>
             </div>
 
@@ -350,7 +350,7 @@
 
           <section class="panel analytics-panel">
             <div class="panel-header compact">
-              <p class="eyebrow">Events</p>
+              <p class="eyebrow" data-i18n="eventsEyebrow">Events</p>
               <h2 data-i18n="eventDetails">事件明细</h2>
             </div>
 

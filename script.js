@@ -11,13 +11,23 @@ const translations = {
     seoSummaryTitle: "AI 内容发布前检查、AIGC 标识合规与图片元数据自查",
     seoSummaryBody:
       "这个工具面向创作者、品牌内容团队、代运营机构和电商商家，用于在发布 AI 辅助内容前检查 AI 使用披露、AIGC 标识、图片 EXIF 元数据、C2PA Content Credentials 和发布前留痕报告。",
+    seoSummaryAria: "工具简介",
+    brandEyebrow: "AIGC 发布前自查",
     languageLabel: "语言",
+    languageZh: "简体中文",
+    languageJa: "日语",
+    languageKo: "韩语",
+    languageEs: "西班牙语",
     step1: "Step 1",
     step2: "Step 2",
     submitContent: "提交内容",
     submitSummary: "本地生成元数据摘要、披露建议和可存档 Markdown 报告。",
     targetPlatform: "目标平台",
     platformGeneric: "通用中文平台",
+    platformXiaohongshu: "小红书",
+    platformDouyin: "抖音",
+    platformWechatOfficial: "微信公众号",
+    platformBilibili: "Bilibili",
     aiInvolvementLabel: "AI 参与程度",
     involvementNone: "未使用 AI",
     involvementAssisted: "AI 辅助润色",
@@ -43,6 +53,7 @@ const translations = {
     checklistTitle: "检查清单",
     downloadMarkdown: "下载 Markdown",
     adminEntry: "管理员入口",
+    adminEyebrow: "管理员",
     adminSummary: "输入管理员密码后查看用户行为和提交内容分析。",
     password: "密码",
     passwordError: "密码错误",
@@ -51,12 +62,14 @@ const translations = {
     enterAnalytics: "进入分析页",
     backToChecker: "返回自查工具",
     behaviorAnalytics: "用户行为分析",
+    overviewEyebrow: "概览",
     visits: "访问次数",
     reports: "生成报告",
     savedSubmissions: "保存提交",
     uniqueIp: "独立 IP",
     platformPreference: "平台偏好",
     trafficAnalytics: "访问来源分析",
+    trafficEyebrow: "流量",
     conversionRate: "转化率",
     ipVisits: "已识别 IP 访问",
     countryCount: "国家/地区数",
@@ -64,6 +77,7 @@ const translations = {
     ipDistribution: "IP 分布",
     recentIps: "最近访问 IP",
     contentAnalytics: "提交内容分析",
+    contentEyebrow: "内容",
     avgCopyLength: "平均文案长度",
     clientRate: "客户内容占比",
     imageRate: "上传图片占比",
@@ -71,6 +85,7 @@ const translations = {
     keywords: "高频词",
     recentSubmissions: "最近提交",
     eventDetails: "事件明细",
+    eventsEyebrow: "事件",
     exportAnalytics: "导出埋点",
     exportSubmissions: "导出提交内容",
     clearAnalytics: "清空埋点",
@@ -95,19 +110,75 @@ const translations = {
     fileType: "类型",
     fileSize: "大小",
     image: "图片",
+    noReportData: "暂无报告生成数据",
+    noInvolvementData: "暂无 AI 参与程度数据",
+    noIpData: "暂无 IP 访问数据",
+    noTrendData: "暂无趋势数据",
+    noCountryData: "暂无国家/地区数据",
+    noLanguageData: "暂无语言数据",
+    noRiskData: "暂无风险状态数据",
+    unknownLocation: "未知位置",
+    visitsUnit: "次访问",
+    noEvents: "暂无事件",
+    noSavedContent: "暂无已保存提交内容",
+    noSubmissions: "暂无提交内容。勾选“保存本次提交内容用于本地分析”后才会记录。",
+    noPublishCopy: "未填写文案",
+    withImage: "含图片",
+    withoutImage: "无图片",
+    eventPageView: "访问页面",
+    eventReportGenerated: "生成报告",
+    eventReportDownloaded: "下载报告",
+    eventDisclosureCopied: "复制披露文案",
+    eventFormCleared: "清空表单",
+    eventAnalyticsReset: "清空埋点",
+    eventSubmissionsReset: "清空提交",
+    disclosureNone: "未检测到需要添加 AI 使用说明的自我声明；如实际使用了 AI，请按实际情况补充。",
+    disclosureAssisted: "本内容使用 AI 工具辅助润色，已由人工审核修改。",
+    disclosureDraft: "本内容部分使用 AI 工具辅助生成，已由人工审核、修改和确认。",
+    disclosureMostly: "本内容主要由 AI 工具生成，并已进行人工审核。",
+    disclosureUnknown: "本内容可能包含 AI 辅助生成部分，发布前建议进一步确认来源和标识要求。",
+    reasonNoCopy: "未填写待发布文案；如果图片说明或标题会公开展示，建议补充后再检查。",
+    reasonNoDisclosure: "文案里没有检测到明确的 AI 使用披露，可复制下方建议文案补充。",
+    reasonUnknownClient: "品牌/客户内容不建议使用“不确定”的 AI 参与声明，需要发布前确认素材来源。",
+    reasonNoMetadata: "图片未检测到 EXIF 或 C2PA/Content Credentials 标记，建议保留原始素材和生成记录。",
+    reasonNoImage: "未上传图片；报告只覆盖文案披露检查。",
+    reasonNoIssue: "当前信息未发现明显缺口，发布前仍建议按平台最新规则复核。",
+    checkAiDeclared: "AI 参与程度已声明",
+    checkDisclosureIncluded: "公开文案包含 AI 披露",
+    checkMetadataDone: "图片元数据已检查",
+    checkTraceArchived: "来源/留痕材料可归档",
+    checkClientRisk: "品牌/客户内容风险复核",
+    checkRuleVersion: "报告包含规则版本",
+    noteDisclosureNeeded: "AI 参与内容建议加入明确披露。",
+    noteNoAiDeclared: "用户声明未使用 AI。",
+    noteMetadataChecked: "已生成文件 hash 并检查轻量元数据标记。",
+    noteNoImageUploaded: "未上传图片。",
+    noteKeepSourceRecords: "建议保留原始文件、生成记录、客户确认记录。",
+    noteClientReview: "客户内容建议确认授权、素材来源和披露口径。",
+    noteNotClientContent: "非客户发布内容。",
   },
   en: {
     appTitle: "AI Publish Readiness Checker",
     seoSummaryTitle: "AI Content Pre-Publish Check, AIGC Labeling Compliance, and Image Metadata Self-Audit",
     seoSummaryBody:
       "This tool is built for creators, brand content teams, agencies, and ecommerce sellers to check AI-use disclosure, AIGC labeling, image EXIF metadata, C2PA Content Credentials, and pre-publish audit reports before publishing AI-assisted content.",
+    seoSummaryAria: "Tool summary",
+    brandEyebrow: "AIGC Publish Readiness",
     languageLabel: "Language",
+    languageZh: "Simplified Chinese",
+    languageJa: "Japanese",
+    languageKo: "Korean",
+    languageEs: "Spanish",
     step1: "Step 1",
     step2: "Step 2",
     submitContent: "Submit Content",
     submitSummary: "Generate local metadata summary, disclosure suggestions, and an archivable Markdown report.",
     targetPlatform: "Target Platform",
     platformGeneric: "Generic Platform",
+    platformXiaohongshu: "Xiaohongshu",
+    platformDouyin: "Douyin",
+    platformWechatOfficial: "WeChat Official Account",
+    platformBilibili: "Bilibili",
     aiInvolvementLabel: "AI Involvement",
     involvementNone: "No AI used",
     involvementAssisted: "AI-assisted editing",
@@ -133,6 +204,7 @@ const translations = {
     checklistTitle: "Checklist",
     downloadMarkdown: "Download Markdown",
     adminEntry: "Admin Entry",
+    adminEyebrow: "Admin",
     adminSummary: "Enter admin password to view behavior and submission analytics.",
     password: "Password",
     passwordError: "Incorrect password",
@@ -141,12 +213,14 @@ const translations = {
     enterAnalytics: "Enter Analytics",
     backToChecker: "Back to Checker",
     behaviorAnalytics: "User Behavior Analytics",
+    overviewEyebrow: "Overview",
     visits: "Visits",
     reports: "Reports",
     savedSubmissions: "Saved Submissions",
     uniqueIp: "Unique IPs",
     platformPreference: "Platform Preference",
     trafficAnalytics: "Traffic Analytics",
+    trafficEyebrow: "Traffic",
     conversionRate: "Conversion Rate",
     ipVisits: "Identified IP Visits",
     countryCount: "Countries/Regions",
@@ -154,6 +228,7 @@ const translations = {
     ipDistribution: "IP Distribution",
     recentIps: "Recent IP Visits",
     contentAnalytics: "Submission Analytics",
+    contentEyebrow: "Content",
     avgCopyLength: "Avg Copy Length",
     clientRate: "Client Content Rate",
     imageRate: "Image Upload Rate",
@@ -161,6 +236,7 @@ const translations = {
     keywords: "Keywords",
     recentSubmissions: "Recent Submissions",
     eventDetails: "Event Details",
+    eventsEyebrow: "Events",
     exportAnalytics: "Export Events",
     exportSubmissions: "Export Submissions",
     clearAnalytics: "Clear Events",
@@ -190,6 +266,52 @@ const translations = {
     fileType: "Type",
     fileSize: "Size",
     image: "Image",
+    noReportData: "No report generation data",
+    noInvolvementData: "No AI involvement data",
+    noIpData: "No IP visit data",
+    noTrendData: "No trend data",
+    noCountryData: "No country/region data",
+    noLanguageData: "No language data",
+    noRiskData: "No risk status data",
+    unknownLocation: "Unknown location",
+    visitsUnit: "visits",
+    noEvents: "No events",
+    noSavedContent: "No saved submission content",
+    noSubmissions: "No submissions yet. Check “Save this submission for local analysis” to record content.",
+    noPublishCopy: "No copy entered",
+    withImage: "With image",
+    withoutImage: "No image",
+    eventPageView: "Page view",
+    eventReportGenerated: "Generated report",
+    eventReportDownloaded: "Downloaded report",
+    eventDisclosureCopied: "Copied disclosure",
+    eventFormCleared: "Cleared form",
+    eventAnalyticsReset: "Cleared analytics",
+    eventSubmissionsReset: "Cleared submissions",
+    disclosureNone: "No AI-use statement appears necessary from the current declaration. If AI was used, add a disclosure that matches the actual workflow.",
+    disclosureAssisted: "This content used AI tools for assisted editing and has been reviewed and revised by a human.",
+    disclosureDraft: "Parts of this content were generated with AI assistance and have been reviewed, revised, and confirmed by a human.",
+    disclosureMostly: "This content was mainly generated by AI tools and has been manually reviewed.",
+    disclosureUnknown: "This content may include AI-assisted generation. Confirm the source and labeling requirements before publishing.",
+    reasonNoCopy: "No publish copy was entered. If the image caption or title will be public, add it before checking.",
+    reasonNoDisclosure: "No clear AI-use disclosure was detected in the copy. You can add the suggested disclosure below.",
+    reasonUnknownClient: "Brand/client content should not use an uncertain AI involvement declaration. Confirm the source before publishing.",
+    reasonNoMetadata: "No EXIF or C2PA/Content Credentials marker was detected. Keep original assets and generation records.",
+    reasonNoImage: "No image was uploaded. This report only covers copy disclosure checks.",
+    reasonNoIssue: "No obvious gap was found. Still review the latest platform rules before publishing.",
+    checkAiDeclared: "AI involvement declared",
+    checkDisclosureIncluded: "Public copy includes AI disclosure",
+    checkMetadataDone: "Image metadata checked",
+    checkTraceArchived: "Source/trace records can be archived",
+    checkClientRisk: "Brand/client content risk reviewed",
+    checkRuleVersion: "Report includes rule version",
+    noteDisclosureNeeded: "AI-assisted content should include a clear disclosure.",
+    noteNoAiDeclared: "The user declared no AI use.",
+    noteMetadataChecked: "Generated file hash and checked lightweight metadata markers.",
+    noteNoImageUploaded: "No image uploaded.",
+    noteKeepSourceRecords: "Keep original files, generation records, and client confirmation records.",
+    noteClientReview: "For client content, confirm authorization, source, and disclosure wording.",
+    noteNotClientContent: "Not client-published content.",
   },
 };
 
@@ -323,6 +445,29 @@ const statusNames = {
   needs_review: "需要补充后发布",
   high_risk: "高风险，先别发布",
 };
+
+const platformLabelKeys = {
+  generic_cn: "platformGeneric",
+  xiaohongshu: "platformXiaohongshu",
+  douyin: "platformDouyin",
+  wechat_official: "platformWechatOfficial",
+  bilibili: "platformBilibili",
+};
+
+const involvementLabelKeys = {
+  none: "involvementNone",
+  assisted_editing: "involvementAssisted",
+  ai_draft_human_revised: "involvementDraft",
+  mostly_ai_generated: "involvementMostly",
+  unknown: "involvementUnknown",
+};
+
+const statusLabelKeys = {
+  pass: "statusPass",
+  needs_review: "statusReview",
+  high_risk: "statusHighRisk",
+};
+
 const languageSelect = document.querySelector("#languageSelect");
 const adminLoginForm = document.querySelector("#adminLoginForm");
 const adminPasswordInput = document.querySelector("#adminPassword");
@@ -410,7 +555,10 @@ languageSelect.addEventListener("change", () => {
   currentLanguage = languageSelect.value;
   localStorage.setItem(LANGUAGE_KEY, currentLanguage);
   applyLanguage(currentLanguage);
-  if (currentReport) renderReport(currentReport);
+  if (currentReport) {
+    currentReport = relocalizeReport(currentReport);
+    renderReport(currentReport);
+  }
   renderAnalytics();
   trackEvent("language_changed", {
     language: currentLanguage,
@@ -686,7 +834,7 @@ function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCam
     {
       label: "AI 参与程度已声明",
       result: aiInvolvement === "unknown" ? "review" : "pass",
-      note: involvementNames[aiInvolvement],
+      note: getInvolvementLabel(aiInvolvement),
     },
     {
       label: "公开文案包含 AI 披露",
@@ -714,6 +862,90 @@ function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCam
       note: RULE_VERSION,
     },
   ];
+}
+
+function getDisclosure(aiInvolvement) {
+  const disclosures = {
+    none: t("disclosureNone"),
+    assisted_editing: t("disclosureAssisted"),
+    ai_draft_human_revised: t("disclosureDraft"),
+    mostly_ai_generated: t("disclosureMostly"),
+    unknown: t("disclosureUnknown"),
+  };
+
+  return disclosures[aiInvolvement] || disclosures.unknown;
+}
+
+function getReasons({ aiInvolvement, hasDisclosure, media, isClientCampaign, copy }) {
+  const reasons = [];
+
+  if (!copy) reasons.push(t("reasonNoCopy"));
+  if (aiInvolvement !== "none" && !hasDisclosure) reasons.push(t("reasonNoDisclosure"));
+  if (aiInvolvement === "unknown" && isClientCampaign) reasons.push(t("reasonUnknownClient"));
+  if (media && !media.exifPresent && !media.c2paPresent) reasons.push(t("reasonNoMetadata"));
+  if (!media) reasons.push(t("reasonNoImage"));
+  if (reasons.length === 0) reasons.push(t("reasonNoIssue"));
+
+  return reasons;
+}
+
+function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCampaign }) {
+  const needsDisclosure = aiInvolvement !== "none";
+
+  return [
+    {
+      label: t("checkAiDeclared"),
+      result: aiInvolvement === "unknown" ? "review" : "pass",
+      note: getInvolvementLabel(aiInvolvement),
+    },
+    {
+      label: t("checkDisclosureIncluded"),
+      result: !needsDisclosure ? "not_applicable" : hasDisclosure ? "pass" : "missing",
+      note: needsDisclosure ? t("noteDisclosureNeeded") : t("noteNoAiDeclared"),
+    },
+    {
+      label: t("checkMetadataDone"),
+      result: media ? "pass" : "not_applicable",
+      note: media ? t("noteMetadataChecked") : t("noteNoImageUploaded"),
+    },
+    {
+      label: t("checkTraceArchived"),
+      result: media && (media.exifPresent || media.c2paPresent) ? "pass" : "review",
+      note: t("noteKeepSourceRecords"),
+    },
+    {
+      label: t("checkClientRisk"),
+      result: isClientCampaign && aiInvolvement === "unknown" ? "missing" : "pass",
+      note: isClientCampaign ? t("noteClientReview") : t("noteNotClientContent"),
+    },
+    {
+      label: t("checkRuleVersion"),
+      result: "pass",
+      note: RULE_VERSION,
+    },
+  ];
+}
+
+function relocalizeReport(report) {
+  const hasDisclosure = containsDisclosure(report.publishCopy);
+  return {
+    ...report,
+    reasons: getReasons({
+      aiInvolvement: report.aiInvolvement,
+      hasDisclosure,
+      media: report.media,
+      isClientCampaign: report.isClientCampaign,
+      copy: report.publishCopy,
+    }),
+    suggestedDisclosure: getDisclosure(report.aiInvolvement),
+    checklist: buildChecklist({
+      aiInvolvement: report.aiInvolvement,
+      copy: report.publishCopy,
+      hasDisclosure,
+      media: report.media,
+      isClientCampaign: report.isClientCampaign,
+    }),
+  };
 }
 
 function renderReport(report) {
@@ -772,7 +1004,7 @@ Report ID: ${report.reportId}
 
 Check date: ${report.createdAt}
 
-Target platform: ${platformNames[report.platform]}
+Target platform: ${getPlatformLabel(report.platform)}
 
 Rule version: ${report.ruleVersion}
 
@@ -796,7 +1028,7 @@ ${report.reasons.map((reason) => `- ${reason}`).join("\n")}
 
 ## User Declaration
 
-- AI involvement level: ${involvementNames[report.aiInvolvement]}
+- AI involvement level: ${getInvolvementLabel(report.aiInvolvement)}
 - Brand/client campaign: ${report.isClientCampaign ? "Yes" : "No"}
 - Publish copy length: ${report.publishCopyLength}
 
@@ -1033,6 +1265,9 @@ function applyLanguage(language) {
   document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
     element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
   });
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
+    element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
+  });
 }
 
 function t(key) {
@@ -1101,20 +1336,20 @@ function renderAnalytics() {
   renderBarChart(
     platformChart,
     countProperty(events, "report_generated", "platform"),
-    platformNames,
-    "暂无报告生成数据",
+    getPlatformLabels(),
+    t("noReportData"),
   );
   renderBarChart(
     involvementChart,
     countProperty(events, "report_generated", "aiInvolvement"),
-    involvementNames,
-    "暂无 AI 参与程度数据",
+    getInvolvementLabels(),
+    t("noInvolvementData"),
   );
-  renderBarChart(ipChart, countProperty(events, "page_view", "ip"), {}, "暂无 IP 访问数据");
-  renderTrendChart(dailyTrendChart, buildLocalTrend(events, submissions), "暂无趋势数据");
-  renderBarChart(countryChart, countEventProperty(events, "country"), {}, "暂无国家/地区数据");
-  renderBarChart(languageChart, countEventProperty(events, "language"), {}, "暂无语言数据");
-  renderBarChart(statusChart, countSubmissionProperty(submissions, "status"), statusNames, "暂无风险状态数据");
+  renderBarChart(ipChart, countProperty(events, "page_view", "ip"), {}, t("noIpData"));
+  renderTrendChart(dailyTrendChart, buildLocalTrend(events, submissions), t("noTrendData"));
+  renderBarChart(countryChart, countEventProperty(events, "country"), {}, t("noCountryData"));
+  renderBarChart(languageChart, countEventProperty(events, "language"), {}, t("noLanguageData"));
+  renderBarChart(statusChart, countSubmissionProperty(submissions, "status"), getStatusLabels(), t("noRiskData"));
   renderIpList(events);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
@@ -1175,13 +1410,13 @@ function renderRemoteAnalytics(stats) {
   metricRiskRate.textContent = `${content.risk_rate || 0}%`;
   adminDataStatus.textContent = t("remoteStatsReady");
 
-  renderBarChart(platformChart, rowsToCounts(stats.platformRows || []), platformNames, "暂无报告生成数据");
-  renderBarChart(involvementChart, rowsToCounts(stats.involvementRows || []), involvementNames, "暂无 AI 参与程度数据");
-  renderBarChart(ipChart, rowsToCounts(stats.ipRows || [], "ip"), {}, "暂无 IP 访问数据");
-  renderTrendChart(dailyTrendChart, stats.dailyRows || [], "暂无趋势数据");
-  renderBarChart(countryChart, rowsToCounts(stats.countryRows || [], "country"), {}, "暂无国家/地区数据");
-  renderBarChart(languageChart, rowsToCounts(stats.languageRows || [], "language"), {}, "暂无语言数据");
-  renderBarChart(statusChart, rowsToCounts(stats.statusRows || []), statusNames, "暂无风险状态数据");
+  renderBarChart(platformChart, rowsToCounts(stats.platformRows || []), getPlatformLabels(), t("noReportData"));
+  renderBarChart(involvementChart, rowsToCounts(stats.involvementRows || []), getInvolvementLabels(), t("noInvolvementData"));
+  renderBarChart(ipChart, rowsToCounts(stats.ipRows || [], "ip"), {}, t("noIpData"));
+  renderTrendChart(dailyTrendChart, stats.dailyRows || [], t("noTrendData"));
+  renderBarChart(countryChart, rowsToCounts(stats.countryRows || [], "country"), {}, t("noCountryData"));
+  renderBarChart(languageChart, rowsToCounts(stats.languageRows || [], "language"), {}, t("noLanguageData"));
+  renderBarChart(statusChart, rowsToCounts(stats.statusRows || []), getStatusLabels(), t("noRiskData"));
   renderRemoteIpList(stats.ipRows || []);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
@@ -1232,6 +1467,26 @@ function getSubmissions() {
   } catch {
     return [];
   }
+}
+
+function getPlatformLabel(key) {
+  return t(platformLabelKeys[key]) || platformNames[key] || key || "unknown";
+}
+
+function getPlatformLabels() {
+  return Object.fromEntries(Object.keys(platformLabelKeys).map((key) => [key, getPlatformLabel(key)]));
+}
+
+function getInvolvementLabel(key) {
+  return t(involvementLabelKeys[key]) || involvementNames[key] || key || "unknown";
+}
+
+function getInvolvementLabels() {
+  return Object.fromEntries(Object.keys(involvementLabelKeys).map((key) => [key, getInvolvementLabel(key)]));
+}
+
+function getStatusLabels() {
+  return Object.fromEntries(Object.keys(statusLabelKeys).map((key) => [key, t(statusLabelKeys[key]) || key]));
 }
 
 function countByName(events, name) {
@@ -1399,7 +1654,7 @@ function renderBarChart(container, counts, labels, emptyText) {
 
 function renderRemoteIpList(rows) {
   if (rows.length === 0) {
-    ipList.innerHTML = `<div class="empty-row">暂无 IP 访问数据</div>`;
+    ipList.innerHTML = `<div class="empty-row">${escapeHtml(t("noIpData"))}</div>`;
     return;
   }
 
@@ -1412,7 +1667,7 @@ function renderRemoteIpList(rows) {
           <strong>${escapeHtml(row.ip || "unknown")}</strong>
           <div>
             <span>${formatDateTime(row.last_seen)}</span>
-            <div>${escapeHtml(location || "未知位置")} · ${Number(row.count || 0)} visits</div>
+            <div>${escapeHtml(location || t("unknownLocation"))} · ${Number(row.count || 0)} ${escapeHtml(t("visitsUnit"))}</div>
           </div>
         </div>
       `;
@@ -1424,7 +1679,7 @@ function renderEventList(events) {
   const recent = [...events].reverse().slice(0, 12);
 
   if (recent.length === 0) {
-    eventList.innerHTML = `<div class="empty-row">暂无事件</div>`;
+    eventList.innerHTML = `<div class="empty-row">${escapeHtml(t("noEvents"))}</div>`;
     return;
   }
 
@@ -1453,7 +1708,7 @@ function renderIpList(events) {
     .slice(0, 12);
 
   if (recent.length === 0) {
-    ipList.innerHTML = `<div class="empty-row">暂无 IP 访问数据</div>`;
+    ipList.innerHTML = `<div class="empty-row">${escapeHtml(t("noIpData"))}</div>`;
     return;
   }
 
@@ -1467,7 +1722,7 @@ function renderIpList(events) {
           <strong>${escapeHtml(event.properties.ip)}</strong>
           <div>
             <span>${formatDateTime(event.timestamp)}</span>
-            <div>${escapeHtml(location || "未知位置")}</div>
+            <div>${escapeHtml(location || t("unknownLocation"))}</div>
           </div>
         </div>
       `;
@@ -1486,7 +1741,7 @@ function renderKeywordChart(submissions) {
     .slice(0, 18);
 
   if (entries.length === 0) {
-    keywordChart.innerHTML = `<div class="empty-row">暂无已保存提交内容</div>`;
+    keywordChart.innerHTML = `<div class="empty-row">${escapeHtml(t("noSavedContent"))}</div>`;
     return;
   }
 
@@ -1499,7 +1754,7 @@ function renderSubmissionList(submissions) {
   const recent = [...submissions].reverse().slice(0, 10);
 
   if (recent.length === 0) {
-    submissionList.innerHTML = `<div class="empty-row">暂无提交内容。勾选“保存本次提交内容用于本地分析”后才会记录。</div>`;
+    submissionList.innerHTML = `<div class="empty-row">${escapeHtml(t("noSubmissions"))}</div>`;
     return;
   }
 
@@ -1510,12 +1765,12 @@ function renderSubmissionList(submissions) {
         <article class="submission-item">
           <div class="submission-meta">
             <span>${formatDateTime(item.createdAt)}</span>
-            <span>${escapeHtml(platformNames[item.platform] || item.platform)}</span>
-            <span>${escapeHtml(involvementNames[item.aiInvolvement] || item.aiInvolvement)}</span>
+            <span>${escapeHtml(getPlatformLabel(item.platform))}</span>
+            <span>${escapeHtml(getInvolvementLabel(item.aiInvolvement))}</span>
             <span>${escapeHtml(getStatusLabel(item.status))}</span>
-            <span>${item.hasImage ? "含图片" : "无图片"}</span>
+            <span>${item.hasImage ? t("withImage") : t("withoutImage")}</span>
           </div>
-          <p class="submission-copy">${escapeHtml(preview || "未填写文案")}</p>
+          <p class="submission-copy">${escapeHtml(preview || t("noPublishCopy"))}</p>
         </article>
       `;
     })
@@ -1531,18 +1786,19 @@ function extractKeywords(copy) {
 
 function getEventLabel(name) {
   const labels = {
-    page_view: "访问页面",
-    report_generated: "生成报告",
-    report_downloaded: "下载报告",
-    disclosure_copied: "复制披露文案",
-    form_cleared: "清空表单",
-    analytics_reset: "清空埋点",
+    page_view: t("eventPageView"),
+    report_generated: t("eventReportGenerated"),
+    report_downloaded: t("eventReportDownloaded"),
+    disclosure_copied: t("eventDisclosureCopied"),
+    form_cleared: t("eventFormCleared"),
+    analytics_reset: t("eventAnalyticsReset"),
+    submissions_reset: t("eventSubmissionsReset"),
   };
   return labels[name] || name;
 }
 
 function formatDateTime(value) {
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(currentLanguage, {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
