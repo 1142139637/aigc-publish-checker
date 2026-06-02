@@ -94,6 +94,28 @@ textarea {
   line-height: 1.7;
 }
 
+.guide-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.guide-links a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--primary-dark);
+  padding: 7px 11px;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.guide-links a:hover {
+  border-color: var(--primary);
+}
+
 .analytics-layout {
   display: grid;
   gap: 20px;
@@ -671,6 +693,92 @@ button.danger {
   color: var(--muted);
 }
 
+.guide-shell {
+  width: min(920px, calc(100vw - 32px));
+}
+
+.guide-topnav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.guide-topnav a,
+.primary-link {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--primary-dark);
+  padding: 9px 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.guide-topnav a:hover,
+.primary-link:hover {
+  border-color: var(--primary);
+}
+
+.guide-article {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 28px;
+  box-shadow: 0 12px 36px rgb(25 30 34 / 8%);
+}
+
+.guide-article section {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 20px;
+}
+
+.guide-article p,
+.guide-article li {
+  line-height: 1.75;
+}
+
+.guide-article a {
+  color: var(--primary-dark);
+}
+
+.guide-checklist {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.guide-grid > div,
+.guide-note {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 14px;
+}
+
+.guide-grid p,
+.guide-note p {
+  margin-bottom: 0;
+}
+
+.guide-cta {
+  margin-top: 24px;
+}
+
+.primary-link {
+  display: inline-flex;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
 @media (max-width: 860px) {
   .app-shell {
     width: min(100vw - 24px, 680px);
@@ -706,6 +814,7 @@ button.danger {
   .check-item,
   .metric-grid,
   .analysis-grid,
+  .guide-grid,
   .bar-row,
   .event-item,
   .ip-item {

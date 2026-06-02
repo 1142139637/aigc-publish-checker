@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aigc-publish-checker-cz74.vercel.app/sitemap.xml

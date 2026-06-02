@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C2PA Content Credentials 与 EXIF 元数据自查 | AI 图片发布前检查</title>
+    <meta
+      name="description"
+      content="AI 图片发布前检查 C2PA Content Credentials、EXIF 元数据、文件 hash、AI 生成标识和发布前留痕报告。"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://aigc-publish-checker-cz74.vercel.app/c2pa-exif-checker.html" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell guide-shell">
+      <nav class="guide-topnav">
+        <a href="./index.html">返回检查工具</a>
+        <a href="./aigc-labeling-guide.html">AIGC 标识</a>
+        <a href="./ai-content-disclosure.html">AI 使用披露</a>
+      </nav>
+
+      <article class="guide-article">
+        <p class="eyebrow">Image Metadata</p>
+        <h1>C2PA / EXIF 图片元数据发布前自查</h1>
+        <p class="summary">
+          AI 图片、商品图、品牌物料发布前，建议检查文件元数据和可追溯信息。即使平台会压缩图片，发布前报告仍能作为内部留痕。
+        </p>
+
+        <section>
+          <h2>要检查什么</h2>
+          <div class="guide-grid">
+            <div>
+              <h3>EXIF</h3>
+              <p>EXIF 可能包含设备、时间、软件等信息。发布前要判断是否需要保留、删除或记录。</p>
+            </div>
+            <div>
+              <h3>C2PA</h3>
+              <p>Content Credentials 可用于记录内容来源、编辑过程和凭证状态，但不是所有工具都会写入。</p>
+            </div>
+            <div>
+              <h3>文件 hash</h3>
+              <p>为发布前文件生成 hash，方便证明某份报告对应哪一个素材版本。</p>
+            </div>
+            <div>
+              <h3>原始素材</h3>
+              <p>保存原图、生成提示词、编辑记录和客户确认记录，降低后续争议处理成本。</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>常见风险</h2>
+          <ul class="guide-checklist">
+            <li>图片看起来像真实拍摄，但实际是 AI 生成。</li>
+            <li>商品图被 AI 改动后和实物不一致。</li>
+            <li>平台压缩导致元数据丢失，但团队没有保存发布前证据。</li>
+            <li>客户素材混入未授权人物、品牌、字体或作品元素。</li>
+          </ul>
+        </section>
+
+        <div class="guide-cta">
+          <a class="primary-link" href="./index.html">上传图片自查</a>
+        </div>
+      </article>
+    </main>
+  </body>
+</html>

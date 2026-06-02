@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/aigc-labeling-guide.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/ai-content-disclosure.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/c2pa-exif-checker.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/xiaohongshu-ai-content-checker.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/douyin-ai-content-checker.html</loc>
+    <priority>0.8</priority>
+  </url>
+</urlset>
