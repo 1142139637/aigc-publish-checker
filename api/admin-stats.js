@@ -48,6 +48,7 @@ module.exports = async function handler(request, response) {
       statusRows,
       dailyRows,
       recentSubmissions,
+      highRiskSubmissions,
       recentEvents,
     ] = await Promise.all([
       pool.query(`
@@ -163,6 +164,13 @@ module.exports = async function handler(request, response) {
         limit 20
       `, params),
       pool.query(`
+        select platform, ai_involvement, status, publish_copy, copy_length, has_image, country, city, created_at
+        from submissions
+        where status = 'high_risk' and ${filterSql}
+        order by created_at desc
+        limit 30
+      `, params),
+      pool.query(`
         select event_name, properties, ip, country, city, created_at
         from events
         where ${filterSql}
@@ -185,6 +193,7 @@ module.exports = async function handler(request, response) {
       statusRows: statusRows.rows,
       dailyRows: dailyRows.rows,
       recentSubmissions: recentSubmissions.rows,
+      highRiskSubmissions: highRiskSubmissions.rows,
       recentEvents: recentEvents.rows,
     });
   } catch (error) {

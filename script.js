@@ -90,6 +90,7 @@ const translations = {
     riskRate: "高风险占比",
     keywords: "高频词",
     recentSubmissions: "最近提交",
+    highRiskSubmissions: "高风险提交",
     eventDetails: "事件明细",
     eventsEyebrow: "事件",
     exportAnalytics: "导出埋点",
@@ -128,6 +129,7 @@ const translations = {
     noEvents: "暂无事件",
     noSavedContent: "暂无已保存提交内容",
     noSubmissions: "暂无提交内容。勾选“保存本次提交内容用于本地分析”后才会记录。",
+    noHighRiskSubmissions: "暂无高风险提交",
     noPublishCopy: "未填写文案",
     withImage: "含图片",
     withoutImage: "无图片",
@@ -273,10 +275,11 @@ const translations = {
     riskRate: "High Risk Rate",
     keywords: "Keywords",
     recentSubmissions: "Recent Submissions",
+    highRiskSubmissions: "High-Risk Submissions",
     eventDetails: "Event Details",
     eventsEyebrow: "Events",
-    exportAnalytics: "Export Events",
-    exportSubmissions: "Export Submissions",
+    exportAnalytics: "Export Events CSV",
+    exportSubmissions: "Export Submissions CSV",
     clearAnalytics: "Clear Events",
     clearSubmissions: "Clear Submissions",
     dailyTrend: "14-Day Trend",
@@ -316,6 +319,7 @@ const translations = {
     noEvents: "No events",
     noSavedContent: "No saved submission content",
     noSubmissions: "No submissions yet. Check “Save this submission for local analysis” to record content.",
+    noHighRiskSubmissions: "No high-risk submissions in this range.",
     noPublishCopy: "No copy entered",
     withImage: "With image",
     withoutImage: "No image",
@@ -629,6 +633,7 @@ const statusChart = document.querySelector("#statusChart");
 const ipList = document.querySelector("#ipList");
 const keywordChart = document.querySelector("#keywordChart");
 const submissionList = document.querySelector("#submissionList");
+const highRiskSubmissionList = document.querySelector("#highRiskSubmissionList");
 const eventList = document.querySelector("#eventList");
 const adminDataStatus = document.querySelector("#adminDataStatus");
 const healthStatus = document.querySelector("#healthStatus");
@@ -792,23 +797,29 @@ analyticsRange.addEventListener("change", async () => {
 });
 
 exportAnalyticsButton.addEventListener("click", () => {
+  const suffix = getExportSuffix();
   if (remoteStats) {
-    downloadJson(remoteStats, `aigc-checker-site-stats-${new Date().toISOString().slice(0, 10)}.json`);
+    downloadCsv(buildRemoteEventsCsvRows(remoteStats), `aigc-checker-site-events-${suffix}.csv`);
     return;
   }
 
-  const events = getAnalyticsEvents();
-  downloadJson(events, `aigc-checker-analytics-${new Date().toISOString().slice(0, 10)}.json`);
+  const events = filterByRange(getAnalyticsEvents(), "timestamp");
+  downloadCsv(buildLocalEventsCsvRows(events), `aigc-checker-events-${suffix}.csv`);
 });
 
 exportSubmissionsButton.addEventListener("click", () => {
+  const suffix = getExportSuffix();
   if (remoteStats) {
-    downloadJson(remoteStats.recentSubmissions || [], `aigc-checker-site-submissions-${new Date().toISOString().slice(0, 10)}.json`);
+    const submissions = [
+      ...(remoteStats.highRiskSubmissions || []),
+      ...(remoteStats.recentSubmissions || []),
+    ];
+    downloadCsv(buildSubmissionCsvRows(normalizeRemoteSubmissions(dedupeSubmissions(submissions))), `aigc-checker-site-submissions-${suffix}.csv`);
     return;
   }
 
-  const submissions = getSubmissions();
-  downloadJson(submissions, `aigc-checker-submissions-${new Date().toISOString().slice(0, 10)}.json`);
+  const submissions = filterByRange(getSubmissions(), "createdAt");
+  downloadCsv(buildSubmissionCsvRows(submissions), `aigc-checker-submissions-${suffix}.csv`);
 });
 
 clearAnalyticsButton.addEventListener("click", () => {
@@ -1637,6 +1648,11 @@ function renderAnalytics() {
   renderIpList(events);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
+  renderSubmissionList(
+    submissions.filter((item) => item.status === "high_risk"),
+    highRiskSubmissionList,
+    t("noHighRiskSubmissions"),
+  );
   renderEventList(events);
 }
 
@@ -1692,6 +1708,7 @@ function renderRemoteAnalytics(stats) {
   const content = stats.content || {};
   const traffic = stats.traffic || {};
   const submissions = normalizeRemoteSubmissions(stats.recentSubmissions || []);
+  const highRiskSubmissions = normalizeRemoteSubmissions(stats.highRiskSubmissions || []);
   const events = normalizeRemoteEvents(stats.recentEvents || []);
   const visitCount = Number(overview.visits || 0);
   const reportCount = Number(overview.reports || 0);
@@ -1722,6 +1739,7 @@ function renderRemoteAnalytics(stats) {
   renderRemoteIpList(stats.ipRows || []);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
+  renderSubmissionList(highRiskSubmissions, highRiskSubmissionList, t("noHighRiskSubmissions"));
   renderEventList(events);
 }
 
@@ -2079,15 +2097,15 @@ function renderKeywordChart(submissions) {
     .join("");
 }
 
-function renderSubmissionList(submissions) {
+function renderSubmissionList(submissions, container = submissionList, emptyText = t("noSubmissions")) {
   const recent = [...submissions].reverse().slice(0, 10);
 
   if (recent.length === 0) {
-    submissionList.innerHTML = `<div class="empty-row">${escapeHtml(t("noSubmissions"))}</div>`;
+    container.innerHTML = `<div class="empty-row">${escapeHtml(emptyText)}</div>`;
     return;
   }
 
-  submissionList.innerHTML = recent
+  container.innerHTML = recent
     .map((item) => {
       const preview = item.publishCopy.length > 180 ? `${item.publishCopy.slice(0, 180)}...` : item.publishCopy;
       return `
@@ -2144,9 +2162,81 @@ function percentage(value, total) {
   return total ? Math.round((value / total) * 100) : 0;
 }
 
-function downloadJson(data, filename) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json;charset=utf-8",
+function getExportSuffix() {
+  return `${analyticsRange.value}-${new Date().toISOString().slice(0, 10)}`;
+}
+
+function buildLocalEventsCsvRows(events) {
+  return events.map((event) => ({
+    event_name: event.name,
+    created_at: event.timestamp,
+    language: event.properties.language || "",
+    platform: event.properties.platform || "",
+    ai_involvement: event.properties.aiInvolvement || "",
+    status: event.properties.status || "",
+    ip: event.properties.ip || "",
+    country: event.properties.country || "",
+    region: event.properties.region || "",
+    city: event.properties.city || "",
+    copy_length: event.properties.copyLength || "",
+    saved_submission: event.properties.savedSubmission || "",
+  }));
+}
+
+function buildRemoteEventsCsvRows(stats) {
+  return normalizeRemoteEvents(stats.recentEvents || []).map((event) => ({
+    event_name: event.name,
+    created_at: event.timestamp,
+    language: event.properties.language || "",
+    platform: event.properties.platform || "",
+    ai_involvement: event.properties.aiInvolvement || "",
+    status: event.properties.status || "",
+    ip: event.properties.ip || "",
+    country: event.properties.country || "",
+    region: event.properties.region || "",
+    city: event.properties.city || "",
+    copy_length: event.properties.copyLength || "",
+    saved_submission: event.properties.savedSubmission || "",
+  }));
+}
+
+function buildSubmissionCsvRows(submissions) {
+  return submissions.map((item) => ({
+    created_at: item.createdAt || "",
+    platform: getPlatformLabel(item.platform),
+    platform_key: item.platform || "",
+    ai_involvement: getInvolvementLabel(item.aiInvolvement),
+    ai_involvement_key: item.aiInvolvement || "",
+    status: getStatusLabel(item.status),
+    status_key: item.status || "",
+    copy_length: item.copyLength || 0,
+    has_image: Boolean(item.hasImage),
+    country: item.country || "",
+    region: item.region || "",
+    city: item.city || "",
+    publish_copy: item.publishCopy || "",
+  }));
+}
+
+function dedupeSubmissions(rows) {
+  const seen = new Set();
+  return rows.filter((item) => {
+    const key = [item.created_at, item.platform, item.status, item.publish_copy].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function downloadCsv(rows, filename) {
+  const normalized = rows.length ? rows : [{}];
+  const headers = Object.keys(normalized[0]);
+  const csv = [
+    headers.join(","),
+    ...rows.map((row) => headers.map((header) => escapeCsv(row[header])).join(",")),
+  ].join("\r\n");
+  const blob = new Blob([`\uFEFF${csv}`], {
+    type: "text/csv;charset=utf-8",
   });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -2156,6 +2246,11 @@ function downloadJson(data, filename) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function escapeCsv(value) {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, '""')}"`;
 }
 
 function syncVisit() {

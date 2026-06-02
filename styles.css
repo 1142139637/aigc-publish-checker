@@ -569,6 +569,11 @@ button.danger {
   background: #fbfcfb;
 }
 
+.risk-list .submission-item {
+  border-color: #e7b8b8;
+  background: #fff8f8;
+}
+
 .submission-meta {
   display: flex;
   gap: 8px;
