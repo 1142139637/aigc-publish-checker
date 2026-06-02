@@ -232,6 +232,15 @@
               <h2 data-i18n="behaviorAnalytics">用户行为分析</h2>
               <p id="adminDataStatus" class="analytics-status">Local browser data</p>
               <p id="healthStatus" class="analytics-status">System status: local preview</p>
+              <label class="analytics-filter">
+                <span data-i18n="dateRange">Date range</span>
+                <select id="analyticsRange">
+                  <option value="7d" data-i18n="range7d">Last 7 days</option>
+                  <option value="today" data-i18n="rangeToday">Today</option>
+                  <option value="30d" data-i18n="range30d">Last 30 days</option>
+                  <option value="all" data-i18n="rangeAll">All time</option>
+                </select>
+              </label>
             </div>
 
             <div class="metric-grid">

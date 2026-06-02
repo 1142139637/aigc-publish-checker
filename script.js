@@ -183,6 +183,11 @@ const translations = {
     healthChecking: "系统状态：检查中...",
     healthConnected: "系统状态：Supabase 已连接",
     healthUnavailable: "系统状态：数据库不可用",
+    dateRange: "日期范围",
+    rangeToday: "今天",
+    range7d: "近 7 天",
+    range30d: "近 30 天",
+    rangeAll: "全部时间",
   },
   en: {
     appTitle: "AI Publish Readiness Checker",
@@ -366,6 +371,11 @@ const translations = {
     healthChecking: "System status: checking...",
     healthConnected: "System status: Supabase connected",
     healthUnavailable: "System status: database unavailable",
+    dateRange: "Date range",
+    rangeToday: "Today",
+    range7d: "Last 7 days",
+    range30d: "Last 30 days",
+    rangeAll: "All time",
   },
 };
 
@@ -622,6 +632,7 @@ const submissionList = document.querySelector("#submissionList");
 const eventList = document.querySelector("#eventList");
 const adminDataStatus = document.querySelector("#adminDataStatus");
 const healthStatus = document.querySelector("#healthStatus");
+const analyticsRange = document.querySelector("#analyticsRange");
 const refreshAdminStatsButton = document.querySelector("#refreshAdminStatsButton");
 const exportAnalyticsButton = document.querySelector("#exportAnalyticsButton");
 const exportSubmissionsButton = document.querySelector("#exportSubmissionsButton");
@@ -771,6 +782,11 @@ downloadButton.addEventListener("click", () => {
 
 refreshAdminStatsButton.addEventListener("click", async () => {
   await loadHealthStatus();
+  await loadAdminStats();
+  renderAnalytics();
+});
+
+analyticsRange.addEventListener("change", async () => {
   await loadAdminStats();
   renderAnalytics();
 });
@@ -1571,8 +1587,8 @@ function renderAnalytics() {
     return;
   }
 
-  const events = getAnalyticsEvents();
-  const submissions = getSubmissions();
+  const events = filterByRange(getAnalyticsEvents(), "timestamp");
+  const submissions = filterByRange(getSubmissions(), "createdAt");
   const visitCount = countByName(events, "page_view");
   const reportCount = countByName(events, "report_generated");
   const conversion = visitCount ? Math.round((reportCount / visitCount) * 100) : 0;
@@ -1638,7 +1654,7 @@ async function loadAdminStats() {
     const response = await fetch("/api/admin-stats", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: adminPasswordForStats }),
+      body: JSON.stringify({ password: adminPasswordForStats, range: analyticsRange.value }),
     });
     if (!response.ok) throw new Error("Admin stats unavailable");
     const stats = await response.json();
@@ -1753,6 +1769,29 @@ function getSubmissions() {
   } catch {
     return [];
   }
+}
+
+function filterByRange(items, dateKey) {
+  const start = getLocalRangeStart(analyticsRange.value);
+  if (!start) return items;
+
+  return items.filter((item) => new Date(item[dateKey]) >= start);
+}
+
+function getLocalRangeStart(range) {
+  const now = new Date();
+  if (range === "all") return null;
+  if (range === "today") {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }
+
+  const days = range === "30d" ? 30 : 7;
+  const start = new Date(now);
+  start.setDate(start.getDate() - (days - 1));
+  start.setHours(0, 0, 0, 0);
+  return start;
 }
 
 function getPlatformLabel(key) {
