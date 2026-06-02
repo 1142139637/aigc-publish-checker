@@ -419,6 +419,50 @@ button.danger {
   background: var(--primary);
 }
 
+.trend-list {
+  display: grid;
+  gap: 8px;
+}
+
+.trend-row {
+  display: grid;
+  grid-template-columns: 64px repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.trend-row time {
+  color: var(--muted);
+}
+
+.trend-segment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 6px;
+  align-items: center;
+}
+
+.trend-segment span {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.trend-segment.reports span {
+  background: #26856a;
+}
+
+.trend-segment.submissions span {
+  background: #b66a1e;
+}
+
+.trend-segment strong {
+  color: var(--ink);
+  font-size: 12px;
+  text-align: right;
+}
+
 .event-list {
   display: grid;
   gap: 8px;

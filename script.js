@@ -72,6 +72,10 @@ const translations = {
     exportSubmissions: "导出提交内容",
     clearAnalytics: "清空埋点",
     clearSubmissions: "清空提交内容",
+    dailyTrend: "14 天趋势",
+    countryDistribution: "国家/地区分布",
+    languageDistribution: "语言分布",
+    riskDistribution: "风险状态分布",
     statusPass: "可发布前复核",
     statusReview: "需要补充后发布",
     statusHighRisk: "高风险，先别发布",
@@ -155,6 +159,10 @@ const translations = {
     exportSubmissions: "Export Submissions",
     clearAnalytics: "Clear Events",
     clearSubmissions: "Clear Submissions",
+    dailyTrend: "14-Day Trend",
+    countryDistribution: "Country/Region Distribution",
+    languageDistribution: "Language Distribution",
+    riskDistribution: "Risk Status Distribution",
     refreshStats: "Refresh Site Stats",
     remoteStatsReady: "Site data · Supabase",
     remoteStatsLoading: "Loading site data...",
@@ -286,6 +294,11 @@ const stopWords = new Set([
 ]);
 
 const pages = document.querySelectorAll(".page");
+const statusNames = {
+  pass: "可发布前复核",
+  needs_review: "需要补充后发布",
+  high_risk: "高风险，先别发布",
+};
 const languageSelect = document.querySelector("#languageSelect");
 const adminLoginForm = document.querySelector("#adminLoginForm");
 const adminPasswordInput = document.querySelector("#adminPassword");
@@ -324,6 +337,10 @@ const metricRiskRate = document.querySelector("#metricRiskRate");
 const platformChart = document.querySelector("#platformChart");
 const involvementChart = document.querySelector("#involvementChart");
 const ipChart = document.querySelector("#ipChart");
+const dailyTrendChart = document.querySelector("#dailyTrendChart");
+const countryChart = document.querySelector("#countryChart");
+const languageChart = document.querySelector("#languageChart");
+const statusChart = document.querySelector("#statusChart");
 const ipList = document.querySelector("#ipList");
 const keywordChart = document.querySelector("#keywordChart");
 const submissionList = document.querySelector("#submissionList");
@@ -1004,7 +1021,10 @@ function trackEvent(name, properties = {}) {
     id: crypto.randomUUID(),
     name,
     timestamp: new Date().toISOString(),
-    properties,
+    properties: {
+      language: currentLanguage,
+      ...properties,
+    },
   });
   localStorage.setItem(ANALYTICS_KEY, JSON.stringify(events.slice(-500)));
   syncEvent(name, properties);
@@ -1067,6 +1087,10 @@ function renderAnalytics() {
     "暂无 AI 参与程度数据",
   );
   renderBarChart(ipChart, countProperty(events, "page_view", "ip"), {}, "暂无 IP 访问数据");
+  renderTrendChart(dailyTrendChart, buildLocalTrend(events, submissions), "暂无趋势数据");
+  renderBarChart(countryChart, countEventProperty(events, "country"), {}, "暂无国家/地区数据");
+  renderBarChart(languageChart, countEventProperty(events, "language"), {}, "暂无语言数据");
+  renderBarChart(statusChart, countSubmissionProperty(submissions, "status"), statusNames, "暂无风险状态数据");
   renderIpList(events);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
@@ -1130,6 +1154,10 @@ function renderRemoteAnalytics(stats) {
   renderBarChart(platformChart, rowsToCounts(stats.platformRows || []), platformNames, "暂无报告生成数据");
   renderBarChart(involvementChart, rowsToCounts(stats.involvementRows || []), involvementNames, "暂无 AI 参与程度数据");
   renderBarChart(ipChart, rowsToCounts(stats.ipRows || [], "ip"), {}, "暂无 IP 访问数据");
+  renderTrendChart(dailyTrendChart, stats.dailyRows || [], "暂无趋势数据");
+  renderBarChart(countryChart, rowsToCounts(stats.countryRows || [], "country"), {}, "暂无国家/地区数据");
+  renderBarChart(languageChart, rowsToCounts(stats.languageRows || [], "language"), {}, "暂无语言数据");
+  renderBarChart(statusChart, rowsToCounts(stats.statusRows || []), statusNames, "暂无风险状态数据");
   renderRemoteIpList(stats.ipRows || []);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
@@ -1196,6 +1224,58 @@ function countProperty(events, eventName, propertyName) {
     }, {});
 }
 
+function countEventProperty(events, propertyName) {
+  return events.reduce((result, event) => {
+    const value = event.properties[propertyName] || "unknown";
+    result[value] = (result[value] || 0) + 1;
+    return result;
+  }, {});
+}
+
+function countSubmissionProperty(submissions, propertyName) {
+  return submissions.reduce((result, item) => {
+    const value = item[propertyName] || "unknown";
+    result[value] = (result[value] || 0) + 1;
+    return result;
+  }, {});
+}
+
+function buildLocalTrend(events, submissions) {
+  const days = getRecentDays(14).map((day) => ({
+    day,
+    visits: 0,
+    reports: 0,
+    submissions: 0,
+  }));
+  const byDay = Object.fromEntries(days.map((row) => [row.day, row]));
+
+  events.forEach((event) => {
+    const day = toDayKey(event.timestamp);
+    if (!byDay[day]) return;
+    if (event.name === "page_view") byDay[day].visits += 1;
+    if (event.name === "report_generated") byDay[day].reports += 1;
+  });
+
+  submissions.forEach((item) => {
+    const day = toDayKey(item.createdAt);
+    if (byDay[day]) byDay[day].submissions += 1;
+  });
+
+  return days;
+}
+
+function getRecentDays(length) {
+  return Array.from({ length }, (_, index) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (length - index - 1));
+    return toDayKey(date);
+  });
+}
+
+function toDayKey(value) {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
 function rowsToCounts(rows, keyName = "key") {
   return rows.reduce((result, row) => {
     const key = row[keyName] || "unknown";
@@ -1229,6 +1309,45 @@ function normalizeRemoteEvents(rows) {
       city: item.city || "",
     },
   }));
+}
+
+function renderTrendChart(container, rows, emptyText) {
+  const normalized = rows.map((row) => ({
+    day: row.day,
+    visits: Number(row.visits || 0),
+    reports: Number(row.reports || 0),
+    submissions: Number(row.submissions || 0),
+  }));
+  const max = Math.max(0, ...normalized.flatMap((row) => [row.visits, row.reports, row.submissions]));
+
+  if (max === 0) {
+    container.innerHTML = `<div class="empty-row">${escapeHtml(emptyText)}</div>`;
+    return;
+  }
+
+  container.innerHTML = normalized
+    .map((row) => {
+      const label = row.day.slice(5);
+      return `
+        <div class="trend-row">
+          <time>${escapeHtml(label)}</time>
+          ${renderTrendSegment("visits", row.visits, max)}
+          ${renderTrendSegment("reports", row.reports, max)}
+          ${renderTrendSegment("submissions", row.submissions, max)}
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderTrendSegment(type, value, max) {
+  const width = value ? Math.max(6, Math.round((value / max) * 100)) : 0;
+  return `
+    <div class="trend-segment ${type}">
+      <span style="width: ${width}%"></span>
+      <strong>${value}</strong>
+    </div>
+  `;
 }
 
 function renderBarChart(container, counts, labels, emptyText) {

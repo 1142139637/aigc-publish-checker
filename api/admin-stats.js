@@ -14,7 +14,20 @@ module.exports = async function handler(request, response) {
     }
 
     const pool = getPool();
-    const [overview, content, traffic, platformRows, involvementRows, ipRows, recentSubmissions, recentEvents] = await Promise.all([
+    const [
+      overview,
+      content,
+      traffic,
+      platformRows,
+      involvementRows,
+      ipRows,
+      countryRows,
+      languageRows,
+      statusRows,
+      dailyRows,
+      recentSubmissions,
+      recentEvents,
+    ] = await Promise.all([
       pool.query(`
         select
           (select count(*)::int from visits) as visits,
@@ -62,6 +75,60 @@ module.exports = async function handler(request, response) {
         limit 30
       `),
       pool.query(`
+        select coalesce(nullif(country, ''), 'unknown') as country, count(*)::int as count
+        from visits
+        group by coalesce(nullif(country, ''), 'unknown')
+        order by count desc
+        limit 20
+      `),
+      pool.query(`
+        select coalesce(nullif(language, ''), 'unknown') as language, count(*)::int as count
+        from visits
+        group by coalesce(nullif(language, ''), 'unknown')
+        order by count desc
+        limit 20
+      `),
+      pool.query(`
+        select coalesce(nullif(status, ''), 'unknown') as key, count(*)::int as count
+        from submissions
+        group by coalesce(nullif(status, ''), 'unknown')
+        order by count desc
+        limit 20
+      `),
+      pool.query(`
+        with days as (
+          select generate_series(current_date - interval '13 days', current_date, interval '1 day')::date as day
+        ),
+        visit_counts as (
+          select created_at::date as day, count(*)::int as visits
+          from visits
+          where created_at >= current_date - interval '13 days'
+          group by created_at::date
+        ),
+        report_counts as (
+          select created_at::date as day, count(*)::int as reports
+          from events
+          where event_name = 'report_generated' and created_at >= current_date - interval '13 days'
+          group by created_at::date
+        ),
+        submission_counts as (
+          select created_at::date as day, count(*)::int as submissions
+          from submissions
+          where created_at >= current_date - interval '13 days'
+          group by created_at::date
+        )
+        select
+          to_char(days.day, 'YYYY-MM-DD') as day,
+          coalesce(visit_counts.visits, 0)::int as visits,
+          coalesce(report_counts.reports, 0)::int as reports,
+          coalesce(submission_counts.submissions, 0)::int as submissions
+        from days
+        left join visit_counts using (day)
+        left join report_counts using (day)
+        left join submission_counts using (day)
+        order by days.day
+      `),
+      pool.query(`
         select platform, ai_involvement, status, publish_copy, copy_length, has_image, country, city, created_at
         from submissions
         order by created_at desc
@@ -83,6 +150,10 @@ module.exports = async function handler(request, response) {
       platformRows: platformRows.rows,
       involvementRows: involvementRows.rows,
       ipRows: ipRows.rows,
+      countryRows: countryRows.rows,
+      languageRows: languageRows.rows,
+      statusRows: statusRows.rows,
+      dailyRows: dailyRows.rows,
       recentSubmissions: recentSubmissions.rows,
       recentEvents: recentEvents.rows,
     });
