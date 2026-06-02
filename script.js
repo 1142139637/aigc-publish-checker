@@ -571,6 +571,7 @@ async function initApp() {
   adminPassword = await loadAdminPassword();
   clientInfo = await loadClientInfo();
   currentLanguage = getInitialLanguage(clientInfo.country);
+  updateLanguageParam(currentLanguage);
   applyLanguage(currentLanguage);
   updateFileNameLabel();
   initRoute();
@@ -586,6 +587,7 @@ async function initApp() {
 languageSelect.addEventListener("change", () => {
   currentLanguage = languageSelect.value;
   localStorage.setItem(LANGUAGE_KEY, currentLanguage);
+  updateLanguageParam(currentLanguage);
   applyLanguage(currentLanguage);
   updateFileNameLabel();
   if (currentReport) {
@@ -1244,6 +1246,12 @@ function isApiHosted() {
 }
 
 function getInitialLanguage(country) {
+  const urlLanguage = getUrlLanguage();
+  if (urlLanguage) {
+    localStorage.setItem(LANGUAGE_KEY, urlLanguage);
+    return urlLanguage;
+  }
+
   const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
   if (translations[savedLanguage]) return savedLanguage;
 
@@ -1256,6 +1264,33 @@ function getInitialLanguage(country) {
   if (browserLanguage.startsWith("ko")) return "ko";
   if (browserLanguage.startsWith("es")) return "es";
   return "en";
+}
+
+function getUrlLanguage() {
+  const raw = new URLSearchParams(window.location.search).get("lang");
+  if (!raw) return "";
+
+  const normalized = raw.trim();
+  const aliases = {
+    zh: "zh-CN",
+    zh_cn: "zh-CN",
+    "zh-cn": "zh-CN",
+    cn: "zh-CN",
+    jp: "ja",
+    kr: "ko",
+  };
+  const language = aliases[normalized.toLowerCase()] || normalized;
+  return translations[language] ? language : "";
+}
+
+function updateLanguageParam(language) {
+  const url = new URL(window.location.href);
+  if (language === "zh-CN") {
+    url.searchParams.delete("lang");
+  } else {
+    url.searchParams.set("lang", language);
+  }
+  window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 function getLanguageFromCountry(country) {
