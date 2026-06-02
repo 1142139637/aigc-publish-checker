@@ -352,6 +352,7 @@ async function initApp() {
     adminEntry: isAdminEntry(),
     ...clientInfo,
   });
+  syncVisit();
   renderAnalytics();
 }
 
@@ -976,6 +977,7 @@ function trackEvent(name, properties = {}) {
     properties,
   });
   localStorage.setItem(ANALYTICS_KEY, JSON.stringify(events.slice(-500)));
+  syncEvent(name, properties);
 }
 
 function getAnalyticsEvents() {
@@ -1070,6 +1072,7 @@ function saveSubmission(report) {
     region: clientInfo.region,
     city: clientInfo.city,
   });
+  syncSubmission(report);
 }
 
 function getSubmissions() {
@@ -1268,4 +1271,50 @@ function downloadJson(data, filename) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function syncVisit() {
+  postJson("/api/track-visit", {
+    language: currentLanguage,
+    page: window.location.pathname + window.location.search,
+  });
+}
+
+function syncEvent(eventName, properties) {
+  postJson("/api/track-event", {
+    eventName,
+    properties,
+    language: currentLanguage,
+  });
+}
+
+function syncSubmission(report) {
+  postJson("/api/track-submission", {
+    platform: report.platform,
+    aiInvolvement: report.aiInvolvement,
+    status: report.status,
+    publishCopy: report.publishCopy,
+    copyLength: report.publishCopyLength,
+    hasImage: Boolean(report.media),
+    fileName: report.media?.fileName || "",
+    fileType: report.media?.fileType || "",
+    fileSizeBytes: report.media?.fileSizeBytes || 0,
+    fileSha256: report.media?.sha256 || "",
+    language: currentLanguage,
+  });
+}
+
+async function postJson(url, payload) {
+  if (!isHostedHttp()) return;
+
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: JSON.stringify(payload).length < 60000,
+    });
+  } catch {
+    // Keep the tool usable even if analytics storage is temporarily unavailable.
+  }
 }

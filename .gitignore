@@ -1,4 +1,5 @@
 .npm-cache/
+node_modules/
 admin-config.json
 local-server.js
 .vercel/
