@@ -8,6 +8,9 @@ const LANGUAGE_KEY = "aigc_checker_language_v1";
 const translations = {
   "zh-CN": {
     appTitle: "AI 内容发布前自查",
+    seoSummaryTitle: "AI 内容发布前检查、AIGC 标识合规与图片元数据自查",
+    seoSummaryBody:
+      "这个工具面向创作者、品牌内容团队、代运营机构和电商商家，用于在发布 AI 辅助内容前检查 AI 使用披露、AIGC 标识、图片 EXIF 元数据、C2PA Content Credentials 和发布前留痕报告。",
     languageLabel: "语言",
     step1: "Step 1",
     step2: "Step 2",
@@ -95,6 +98,9 @@ const translations = {
   },
   en: {
     appTitle: "AI Publish Readiness Checker",
+    seoSummaryTitle: "AI Content Pre-Publish Check, AIGC Labeling Compliance, and Image Metadata Self-Audit",
+    seoSummaryBody:
+      "This tool is built for creators, brand content teams, agencies, and ecommerce sellers to check AI-use disclosure, AIGC labeling, image EXIF metadata, C2PA Content Credentials, and pre-publish audit reports before publishing AI-assisted content.",
     languageLabel: "Language",
     step1: "Step 1",
     step2: "Step 2",
@@ -255,6 +261,24 @@ translations.es = {
   password: "Contraseña",
   passwordError: "Contraseña incorrecta",
 };
+
+Object.assign(translations.ja, {
+  seoSummaryTitle: "AI コンテンツ公開前チェック、AIGC 表示コンプライアンス、画像メタデータ自己点検",
+  seoSummaryBody:
+    "このツールは、クリエイター、ブランドのコンテンツチーム、運用代行会社、EC 事業者向けに、AI 支援コンテンツ公開前の AI 利用開示、AIGC 表示、画像 EXIF メタデータ、C2PA Content Credentials、公開前記録レポートを確認するためのものです。",
+});
+
+Object.assign(translations.ko, {
+  seoSummaryTitle: "AI 콘텐츠 게시 전 점검, AIGC 표시 준수, 이미지 메타데이터 자체 확인",
+  seoSummaryBody:
+    "이 도구는 크리에이터, 브랜드 콘텐츠 팀, 운영 대행사, 전자상거래 판매자가 AI 보조 콘텐츠를 게시하기 전에 AI 사용 공개, AIGC 표시, 이미지 EXIF 메타데이터, C2PA Content Credentials, 게시 전 기록 보고서를 확인하도록 돕습니다.",
+});
+
+Object.assign(translations.es, {
+  seoSummaryTitle: "Revisión previa de contenido con IA, cumplimiento de etiquetado AIGC y metadatos de imagen",
+  seoSummaryBody:
+    "Esta herramienta está pensada para creadores, equipos de contenido de marca, agencias y vendedores ecommerce que necesitan revisar la divulgación del uso de IA, el etiquetado AIGC, los metadatos EXIF de imágenes, C2PA Content Credentials y el informe de trazabilidad antes de publicar contenido asistido por IA.",
+});
 
 const platformNames = {
   generic_cn: "通用中文平台",
