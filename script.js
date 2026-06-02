@@ -155,6 +155,11 @@ const translations = {
     exportSubmissions: "Export Submissions",
     clearAnalytics: "Clear Events",
     clearSubmissions: "Clear Submissions",
+    refreshStats: "Refresh Site Stats",
+    remoteStatsReady: "Site data · Supabase",
+    remoteStatsLoading: "Loading site data...",
+    remoteStatsFailed: "Site data failed to load. Showing local browser data.",
+    localStatsReady: "Local browser data",
     statusPass: "Ready for final review",
     statusReview: "Needs fixes before publishing",
     statusHighRisk: "High risk, do not publish yet",
@@ -323,6 +328,8 @@ const ipList = document.querySelector("#ipList");
 const keywordChart = document.querySelector("#keywordChart");
 const submissionList = document.querySelector("#submissionList");
 const eventList = document.querySelector("#eventList");
+const adminDataStatus = document.querySelector("#adminDataStatus");
+const refreshAdminStatsButton = document.querySelector("#refreshAdminStatsButton");
 const exportAnalyticsButton = document.querySelector("#exportAnalyticsButton");
 const exportSubmissionsButton = document.querySelector("#exportSubmissionsButton");
 const clearAnalyticsButton = document.querySelector("#clearAnalyticsButton");
@@ -330,6 +337,8 @@ const clearSubmissionsButton = document.querySelector("#clearSubmissionsButton")
 
 let currentReport = null;
 let adminPassword = "";
+let adminPasswordForStats = "";
+let remoteStats = null;
 let currentLanguage = "zh-CN";
 let clientInfo = {
   ip: "",
@@ -368,24 +377,26 @@ languageSelect.addEventListener("change", () => {
   });
 });
 
-adminLoginForm.addEventListener("submit", (event) => {
+adminLoginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  verifyAdminPassword(adminPasswordInput.value).then((isValid) => {
-    if (!isValid) {
-      adminLoginError.textContent = t("passwordError");
-      adminLoginError.classList.remove("hidden");
-      trackEvent("admin_login_failed");
-      renderAnalytics();
-      return;
-    }
-
-    sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
-    adminPasswordInput.value = "";
-    adminLoginError.classList.add("hidden");
-    showPage("analyticsPage");
-    trackEvent("admin_login_success");
+  const password = adminPasswordInput.value;
+  const isValid = await verifyAdminPassword(password);
+  if (!isValid) {
+    adminLoginError.textContent = t("passwordError");
+    adminLoginError.classList.remove("hidden");
+    trackEvent("admin_login_failed");
     renderAnalytics();
-  });
+    return;
+  }
+
+  adminPasswordForStats = password;
+  sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+  adminPasswordInput.value = "";
+  adminLoginError.classList.add("hidden");
+  showPage("analyticsPage");
+  trackEvent("admin_login_success");
+  await loadAdminStats();
+  renderAnalytics();
 });
 
 backToCheckerButton.addEventListener("click", () => {
@@ -452,12 +463,27 @@ downloadButton.addEventListener("click", () => {
   renderAnalytics();
 });
 
+refreshAdminStatsButton.addEventListener("click", async () => {
+  await loadAdminStats();
+  renderAnalytics();
+});
+
 exportAnalyticsButton.addEventListener("click", () => {
+  if (remoteStats) {
+    downloadJson(remoteStats, `aigc-checker-site-stats-${new Date().toISOString().slice(0, 10)}.json`);
+    return;
+  }
+
   const events = getAnalyticsEvents();
   downloadJson(events, `aigc-checker-analytics-${new Date().toISOString().slice(0, 10)}.json`);
 });
 
 exportSubmissionsButton.addEventListener("click", () => {
+  if (remoteStats) {
+    downloadJson(remoteStats.recentSubmissions || [], `aigc-checker-site-submissions-${new Date().toISOString().slice(0, 10)}.json`);
+    return;
+  }
+
   const submissions = getSubmissions();
   downloadJson(submissions, `aigc-checker-submissions-${new Date().toISOString().slice(0, 10)}.json`);
 });
@@ -838,7 +864,7 @@ async function loadAdminPassword() {
 }
 
 async function loadClientInfo() {
-  if (!isHostedHttp()) {
+  if (!isApiHosted()) {
     return {
       ip: "local",
       country: "",
@@ -871,7 +897,7 @@ async function loadClientInfo() {
 }
 
 async function verifyAdminPassword(password) {
-  if (isHostedHttp()) {
+  if (isApiHosted()) {
     try {
       const response = await fetch("/api/admin-login", {
         method: "POST",
@@ -900,6 +926,10 @@ function isAdminAuthenticated() {
 
 function isHostedHttp() {
   return window.location.protocol === "http:" || window.location.protocol === "https:";
+}
+
+function isApiHosted() {
+  return isHostedHttp() && !["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 }
 
 function getInitialLanguage(country) {
@@ -989,6 +1019,11 @@ function getAnalyticsEvents() {
 }
 
 function renderAnalytics() {
+  if (remoteStats) {
+    renderRemoteAnalytics(remoteStats);
+    return;
+  }
+
   const events = getAnalyticsEvents();
   const submissions = getSubmissions();
   const visitCount = countByName(events, "page_view");
@@ -1017,6 +1052,7 @@ function renderAnalytics() {
   metricClientRate.textContent = `${clientRate}%`;
   metricImageRate.textContent = `${imageRate}%`;
   metricRiskRate.textContent = `${riskRate}%`;
+  adminDataStatus.textContent = t("localStatsReady");
 
   renderBarChart(
     platformChart,
@@ -1032,6 +1068,69 @@ function renderAnalytics() {
   );
   renderBarChart(ipChart, countProperty(events, "page_view", "ip"), {}, "暂无 IP 访问数据");
   renderIpList(events);
+  renderKeywordChart(submissions);
+  renderSubmissionList(submissions);
+  renderEventList(events);
+}
+
+async function loadAdminStats() {
+  if (!adminPasswordForStats || !isApiHosted()) {
+    remoteStats = null;
+    adminDataStatus.textContent = t("localStatsReady");
+    return;
+  }
+
+  adminDataStatus.textContent = t("remoteStatsLoading");
+  refreshAdminStatsButton.disabled = true;
+
+  try {
+    const response = await fetch("/api/admin-stats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: adminPasswordForStats }),
+    });
+    if (!response.ok) throw new Error("Admin stats unavailable");
+    const stats = await response.json();
+    if (!stats.ok) throw new Error("Admin stats failed");
+    remoteStats = stats;
+    adminDataStatus.textContent = t("remoteStatsReady");
+  } catch {
+    remoteStats = null;
+    adminDataStatus.textContent = t("remoteStatsFailed");
+  } finally {
+    refreshAdminStatsButton.disabled = false;
+  }
+}
+
+function renderRemoteAnalytics(stats) {
+  const overview = stats.overview || {};
+  const content = stats.content || {};
+  const traffic = stats.traffic || {};
+  const submissions = normalizeRemoteSubmissions(stats.recentSubmissions || []);
+  const events = normalizeRemoteEvents(stats.recentEvents || []);
+  const visitCount = Number(overview.visits || 0);
+  const reportCount = Number(overview.reports || 0);
+  const submissionCount = Number(overview.submissions || 0);
+  const conversion = visitCount ? Math.round((reportCount / visitCount) * 100) : 0;
+
+  metricVisits.textContent = String(visitCount);
+  metricReports.textContent = String(reportCount);
+  metricSubmissions.textContent = String(submissionCount);
+  metricUniqueIps.textContent = String(overview.unique_ips || 0);
+  metricConversion.textContent = `${conversion}%`;
+  metricIpVisits.textContent = String(traffic.ip_visits || overview.unique_ips || 0);
+  metricCountryCount.textContent = String(traffic.country_count || 0);
+  metricCityCount.textContent = String(traffic.city_count || 0);
+  metricAvgCopyLength.textContent = String(content.avg_copy_length || 0);
+  metricClientRate.textContent = `${content.client_rate || 0}%`;
+  metricImageRate.textContent = `${content.image_rate || 0}%`;
+  metricRiskRate.textContent = `${content.risk_rate || 0}%`;
+  adminDataStatus.textContent = t("remoteStatsReady");
+
+  renderBarChart(platformChart, rowsToCounts(stats.platformRows || []), platformNames, "暂无报告生成数据");
+  renderBarChart(involvementChart, rowsToCounts(stats.involvementRows || []), involvementNames, "暂无 AI 参与程度数据");
+  renderBarChart(ipChart, rowsToCounts(stats.ipRows || [], "ip"), {}, "暂无 IP 访问数据");
+  renderRemoteIpList(stats.ipRows || []);
   renderKeywordChart(submissions);
   renderSubmissionList(submissions);
   renderEventList(events);
@@ -1097,6 +1196,41 @@ function countProperty(events, eventName, propertyName) {
     }, {});
 }
 
+function rowsToCounts(rows, keyName = "key") {
+  return rows.reduce((result, row) => {
+    const key = row[keyName] || "unknown";
+    result[key] = Number(row.count || 0);
+    return result;
+  }, {});
+}
+
+function normalizeRemoteSubmissions(rows) {
+  return [...rows].reverse().map((item) => ({
+    createdAt: item.created_at,
+    platform: item.platform,
+    aiInvolvement: item.ai_involvement,
+    status: item.status,
+    publishCopy: item.publish_copy || "",
+    copyLength: Number(item.copy_length || 0),
+    hasImage: Boolean(item.has_image),
+    country: item.country || "",
+    city: item.city || "",
+  }));
+}
+
+function normalizeRemoteEvents(rows) {
+  return [...rows].reverse().map((item) => ({
+    name: item.event_name,
+    timestamp: item.created_at,
+    properties: {
+      ...(item.properties || {}),
+      ip: item.ip || "",
+      country: item.country || "",
+      city: item.city || "",
+    },
+  }));
+}
+
 function renderBarChart(container, counts, labels, emptyText) {
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const max = Math.max(1, ...entries.map(([, count]) => count));
@@ -1114,6 +1248,29 @@ function renderBarChart(container, counts, labels, emptyText) {
           <span>${escapeHtml(labels[key] || key)}</span>
           <div class="bar-track"><div class="bar-fill" style="width: ${width}%"></div></div>
           <strong>${count}</strong>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderRemoteIpList(rows) {
+  if (rows.length === 0) {
+    ipList.innerHTML = `<div class="empty-row">暂无 IP 访问数据</div>`;
+    return;
+  }
+
+  ipList.innerHTML = rows
+    .slice(0, 12)
+    .map((row) => {
+      const location = [row.country, row.region, row.city].filter(Boolean).join(" / ");
+      return `
+        <div class="ip-item">
+          <strong>${escapeHtml(row.ip || "unknown")}</strong>
+          <div>
+            <span>${formatDateTime(row.last_seen)}</span>
+            <div>${escapeHtml(location || "未知位置")} · ${Number(row.count || 0)} visits</div>
+          </div>
         </div>
       `;
     })
@@ -1305,7 +1462,7 @@ function syncSubmission(report) {
 }
 
 async function postJson(url, payload) {
-  if (!isHostedHttp()) return;
+  if (!isApiHosted()) return;
 
   try {
     await fetch(url, {

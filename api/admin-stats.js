@@ -14,7 +14,7 @@ module.exports = async function handler(request, response) {
     }
 
     const pool = getPool();
-    const [overview, platformRows, involvementRows, ipRows, recentSubmissions, recentEvents] = await Promise.all([
+    const [overview, content, traffic, platformRows, involvementRows, ipRows, recentSubmissions, recentEvents] = await Promise.all([
       pool.query(`
         select
           (select count(*)::int from visits) as visits,
@@ -23,16 +23,33 @@ module.exports = async function handler(request, response) {
           (select count(distinct ip)::int from visits where ip <> '') as unique_ips
       `),
       pool.query(`
-        select platform as key, count(*)::int as count
+        select
+          coalesce(round(avg(copy_length)), 0)::int as avg_copy_length,
+          coalesce(round(100.0 * count(*) filter (where has_image = true) / nullif(count(*), 0)), 0)::int as image_rate,
+          coalesce(round(100.0 * count(*) filter (where status = 'high_risk') / nullif(count(*), 0)), 0)::int as risk_rate,
+          0::int as client_rate
         from submissions
-        group by platform
+      `),
+      pool.query(`
+        select
+          count(*) filter (where ip <> '')::int as ip_visits,
+          count(distinct country) filter (where country <> '')::int as country_count,
+          count(distinct city) filter (where city <> '')::int as city_count
+        from visits
+      `),
+      pool.query(`
+        select properties->>'platform' as key, count(*)::int as count
+        from events
+        where event_name = 'report_generated' and properties->>'platform' is not null
+        group by properties->>'platform'
         order by count desc
         limit 20
       `),
       pool.query(`
-        select ai_involvement as key, count(*)::int as count
-        from submissions
-        group by ai_involvement
+        select properties->>'aiInvolvement' as key, count(*)::int as count
+        from events
+        where event_name = 'report_generated' and properties->>'aiInvolvement' is not null
+        group by properties->>'aiInvolvement'
         order by count desc
         limit 20
       `),
@@ -61,6 +78,8 @@ module.exports = async function handler(request, response) {
     response.status(200).json({
       ok: true,
       overview: overview.rows[0],
+      content: content.rows[0],
+      traffic: traffic.rows[0],
       platformRows: platformRows.rows,
       involvementRows: involvementRows.rows,
       ipRows: ipRows.rows,

@@ -99,6 +99,13 @@ textarea {
   gap: 20px;
 }
 
+.analytics-status {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .admin-login-wrap {
   min-height: calc(100vh - 150px);
   display: grid;
