@@ -162,6 +162,27 @@ const translations = {
     noteKeepSourceRecords: "建议保留原始文件、生成记录、客户确认记录。",
     noteClientReview: "客户内容建议确认授权、素材来源和披露口径。",
     noteNotClientContent: "非客户发布内容。",
+    ruleRequired: "强制披露",
+    ruleRecommended: "建议披露",
+    reasonPlatformRule: "平台规则",
+    reasonRequiredDisclosure: "目标平台对 AI 辅助内容要求更严格，当前文案未检测到明确 AI 使用披露。",
+    checkPlatformRule: "目标平台规则已匹配",
+    noteDisclosureRequired: "该平台规则建议把 AI 使用披露作为发布前必填项。",
+    noteTraceRequired: "该平台规则建议保留原始素材、生成记录和客户确认记录作为必备留痕。",
+    reportTitle: "AI 内容发布前合规留痕报告",
+    reportSummary: "报告摘要",
+    reportAuditTrail: "发布前留痕",
+    reportPlatformRules: "平台规则口径",
+    reportActionItems: "建议动作",
+    reportMetadata: "文件与元数据",
+    reportDeclaration: "用户声明",
+    reportDisclosure: "披露建议",
+    reportChecklist: "检查清单",
+    reportRiskNotes: "风险说明",
+    healthLocal: "系统状态：本地预览",
+    healthChecking: "系统状态：检查中...",
+    healthConnected: "系统状态：Supabase 已连接",
+    healthUnavailable: "系统状态：数据库不可用",
   },
   en: {
     appTitle: "AI Publish Readiness Checker",
@@ -324,6 +345,27 @@ const translations = {
     noteKeepSourceRecords: "Keep original files, generation records, and client confirmation records.",
     noteClientReview: "For client content, confirm authorization, source, and disclosure wording.",
     noteNotClientContent: "Not client-published content.",
+    ruleRequired: "Required disclosure",
+    ruleRecommended: "Recommended disclosure",
+    reasonPlatformRule: "Platform rule",
+    reasonRequiredDisclosure: "The target platform applies stricter AI-assisted content requirements, and no clear AI-use disclosure was detected.",
+    checkPlatformRule: "Target platform rule matched",
+    noteDisclosureRequired: "This platform treats AI-use disclosure as a pre-publish requirement.",
+    noteTraceRequired: "This platform expects original assets, generation records, and client confirmation records to be retained as audit evidence.",
+    reportTitle: "AI Content Pre-Publish Compliance Audit Report",
+    reportSummary: "Report Summary",
+    reportAuditTrail: "Pre-Publish Audit Trail",
+    reportPlatformRules: "Platform Rule Position",
+    reportActionItems: "Recommended Actions",
+    reportMetadata: "File and Metadata",
+    reportDeclaration: "User Declaration",
+    reportDisclosure: "Disclosure Recommendation",
+    reportChecklist: "Checklist",
+    reportRiskNotes: "Risk Notes",
+    healthLocal: "System status: local preview",
+    healthChecking: "System status: checking...",
+    healthConnected: "System status: Supabase connected",
+    healthUnavailable: "System status: database unavailable",
   },
 };
 
@@ -498,6 +540,39 @@ const statusLabelKeys = {
   high_risk: "statusHighRisk",
 };
 
+const platformRuleProfiles = {
+  generic_cn: {
+    disclosure: "recommended",
+    metadata: "recommended",
+    trace: "recommended",
+    clientReview: "recommended",
+  },
+  xiaohongshu: {
+    disclosure: "required",
+    metadata: "recommended",
+    trace: "required",
+    clientReview: "required",
+  },
+  douyin: {
+    disclosure: "required",
+    metadata: "recommended",
+    trace: "required",
+    clientReview: "required",
+  },
+  wechat_official: {
+    disclosure: "required",
+    metadata: "recommended",
+    trace: "required",
+    clientReview: "required",
+  },
+  bilibili: {
+    disclosure: "recommended",
+    metadata: "recommended",
+    trace: "recommended",
+    clientReview: "recommended",
+  },
+};
+
 const languageSelect = document.querySelector("#languageSelect");
 const adminLoginForm = document.querySelector("#adminLoginForm");
 const adminPasswordInput = document.querySelector("#adminPassword");
@@ -546,6 +621,7 @@ const keywordChart = document.querySelector("#keywordChart");
 const submissionList = document.querySelector("#submissionList");
 const eventList = document.querySelector("#eventList");
 const adminDataStatus = document.querySelector("#adminDataStatus");
+const healthStatus = document.querySelector("#healthStatus");
 const refreshAdminStatsButton = document.querySelector("#refreshAdminStatsButton");
 const exportAnalyticsButton = document.querySelector("#exportAnalyticsButton");
 const exportSubmissionsButton = document.querySelector("#exportSubmissionsButton");
@@ -623,6 +699,7 @@ adminLoginForm.addEventListener("submit", async (event) => {
   adminLoginError.classList.add("hidden");
   showPage("analyticsPage");
   trackEvent("admin_login_success");
+  await loadHealthStatus();
   await loadAdminStats();
   renderAnalytics();
 });
@@ -693,6 +770,7 @@ downloadButton.addEventListener("click", () => {
 });
 
 refreshAdminStatsButton.addEventListener("click", async () => {
+  await loadHealthStatus();
   await loadAdminStats();
   renderAnalytics();
 });
@@ -737,22 +815,26 @@ async function buildReport() {
   const isClientCampaign = clientCampaignInput.checked;
   const media = file ? await inspectFile(file) : null;
   const hasDisclosure = containsDisclosure(copy);
+  const platformRules = getPlatformRules(platform);
   const suggestedDisclosure = getDisclosure(aiInvolvement);
   const checklist = buildChecklist({
+    platform,
+    platformRules,
     aiInvolvement,
     copy,
     hasDisclosure,
     media,
     isClientCampaign,
   });
-  const status = getStatus({ aiInvolvement, hasDisclosure, media, isClientCampaign });
-  const reasons = getReasons({ aiInvolvement, hasDisclosure, media, isClientCampaign, copy });
+  const status = getStatus({ platformRules, aiInvolvement, hasDisclosure, media, isClientCampaign });
+  const reasons = getReasons({ platform, platformRules, aiInvolvement, hasDisclosure, media, isClientCampaign, copy });
 
   return {
     reportId: `AIGC-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}`,
     createdAt: new Date().toISOString(),
     ruleVersion: RULE_VERSION,
     platform,
+    platformRules,
     aiInvolvement,
     isClientCampaign,
     status,
@@ -904,6 +986,14 @@ function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCam
   ];
 }
 
+function getPlatformRules(platform) {
+  return platformRuleProfiles[platform] || platformRuleProfiles.generic_cn;
+}
+
+function isRequired(value) {
+  return value === "required";
+}
+
 function getDisclosure(aiInvolvement) {
   const disclosures = {
     none: t("disclosureNone"),
@@ -916,11 +1006,30 @@ function getDisclosure(aiInvolvement) {
   return disclosures[aiInvolvement] || disclosures.unknown;
 }
 
-function getReasons({ aiInvolvement, hasDisclosure, media, isClientCampaign, copy }) {
+function getStatus({ platformRules, aiInvolvement, hasDisclosure, media, isClientCampaign }) {
+  const disclosureRequired = isRequired(platformRules.disclosure);
+  const traceRequired = isRequired(platformRules.trace);
+  const clientReviewRequired = isRequired(platformRules.clientReview);
+
+  if (aiInvolvement === "mostly_ai_generated" && !hasDisclosure && disclosureRequired) return "high_risk";
+  if (aiInvolvement === "unknown" && isClientCampaign && clientReviewRequired) return "high_risk";
+  if (aiInvolvement === "mostly_ai_generated" && !hasDisclosure) return "needs_review";
+  if (aiInvolvement === "unknown" && isClientCampaign) return "needs_review";
+  if (aiInvolvement === "ai_draft_human_revised" && !hasDisclosure) return "needs_review";
+  if (aiInvolvement === "assisted_editing" && !hasDisclosure) return "needs_review";
+  if (media && !media.exifPresent && !media.c2paPresent && traceRequired) return "needs_review";
+  if (media && !media.exifPresent && !media.c2paPresent) return "needs_review";
+  return "pass";
+}
+
+function getReasons({ platform, platformRules, aiInvolvement, hasDisclosure, media, isClientCampaign, copy }) {
   const reasons = [];
 
+  reasons.push(`${t("reasonPlatformRule")}: ${getPlatformLabel(platform)} · ${getRuleStrictnessLabel(platformRules.disclosure)}`);
   if (!copy) reasons.push(t("reasonNoCopy"));
-  if (aiInvolvement !== "none" && !hasDisclosure) reasons.push(t("reasonNoDisclosure"));
+  if (aiInvolvement !== "none" && !hasDisclosure) {
+    reasons.push(isRequired(platformRules.disclosure) ? t("reasonRequiredDisclosure") : t("reasonNoDisclosure"));
+  }
   if (aiInvolvement === "unknown" && isClientCampaign) reasons.push(t("reasonUnknownClient"));
   if (media && !media.exifPresent && !media.c2paPresent) reasons.push(t("reasonNoMetadata"));
   if (!media) reasons.push(t("reasonNoImage"));
@@ -929,10 +1038,17 @@ function getReasons({ aiInvolvement, hasDisclosure, media, isClientCampaign, cop
   return reasons;
 }
 
-function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCampaign }) {
+function buildChecklist({ platform, platformRules, aiInvolvement, copy, hasDisclosure, media, isClientCampaign }) {
   const needsDisclosure = aiInvolvement !== "none";
+  const disclosureRequired = isRequired(platformRules.disclosure);
+  const traceRequired = isRequired(platformRules.trace);
 
   return [
+    {
+      label: t("checkPlatformRule"),
+      result: "pass",
+      note: `${getPlatformLabel(platform)} · ${getRuleStrictnessLabel(platformRules.disclosure)}`,
+    },
     {
       label: t("checkAiDeclared"),
       result: aiInvolvement === "unknown" ? "review" : "pass",
@@ -941,7 +1057,11 @@ function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCam
     {
       label: t("checkDisclosureIncluded"),
       result: !needsDisclosure ? "not_applicable" : hasDisclosure ? "pass" : "missing",
-      note: needsDisclosure ? t("noteDisclosureNeeded") : t("noteNoAiDeclared"),
+      note: needsDisclosure
+        ? disclosureRequired
+          ? t("noteDisclosureRequired")
+          : t("noteDisclosureNeeded")
+        : t("noteNoAiDeclared"),
     },
     {
       label: t("checkMetadataDone"),
@@ -950,8 +1070,8 @@ function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCam
     },
     {
       label: t("checkTraceArchived"),
-      result: media && (media.exifPresent || media.c2paPresent) ? "pass" : "review",
-      note: t("noteKeepSourceRecords"),
+      result: media && (media.exifPresent || media.c2paPresent) ? "pass" : traceRequired ? "missing" : "review",
+      note: traceRequired ? t("noteTraceRequired") : t("noteKeepSourceRecords"),
     },
     {
       label: t("checkClientRisk"),
@@ -968,9 +1088,13 @@ function buildChecklist({ aiInvolvement, copy, hasDisclosure, media, isClientCam
 
 function relocalizeReport(report) {
   const hasDisclosure = containsDisclosure(report.publishCopy);
+  const platformRules = getPlatformRules(report.platform);
   return {
     ...report,
+    platformRules,
     reasons: getReasons({
+      platform: report.platform,
+      platformRules,
       aiInvolvement: report.aiInvolvement,
       hasDisclosure,
       media: report.media,
@@ -979,6 +1103,8 @@ function relocalizeReport(report) {
     }),
     suggestedDisclosure: getDisclosure(report.aiInvolvement),
     checklist: buildChecklist({
+      platform: report.platform,
+      platformRules,
       aiInvolvement: report.aiInvolvement,
       copy: report.publishCopy,
       hasDisclosure,
@@ -1037,26 +1163,39 @@ function toMarkdown(report) {
   const checklist = report.checklist
     .map((item) => `| ${item.label} | ${getChecklistLabel(item.result)} | ${item.note} |`)
     .join("\n");
+  const platformRules = report.platformRules || getPlatformRules(report.platform);
 
-  return `# AI Content Publish-Readiness Report
+  return `# ${t("reportTitle")}
 
-Report ID: ${report.reportId}
+## ${t("reportSummary")}
 
-Check date: ${report.createdAt}
+- Report ID: ${report.reportId}
+- Check date: ${report.createdAt}
+- Rule version: ${report.ruleVersion}
+- Target platform: ${getPlatformLabel(report.platform)}
+- Status: ${getStatusLabel(report.status)}
+- Copy length: ${report.publishCopyLength}
+- Image uploaded: ${report.media ? t("withImage") : t("withoutImage")}
 
-Target platform: ${getPlatformLabel(report.platform)}
+## ${t("reportPlatformRules")}
 
-Rule version: ${report.ruleVersion}
+- Disclosure: ${getRuleStrictnessLabel(platformRules.disclosure)}
+- Metadata check: ${getRuleStrictnessLabel(platformRules.metadata)}
+- Audit trail: ${getRuleStrictnessLabel(platformRules.trace)}
+- Client/brand review: ${getRuleStrictnessLabel(platformRules.clientReview)}
 
-## Result
-
-Status: ${getStatusLabel(report.status)}
-
-Main reason:
+## ${t("reportActionItems")}
 
 ${report.reasons.map((reason) => `- ${reason}`).join("\n")}
 
-## Detected File Information
+## ${t("reportAuditTrail")}
+
+- Keep original source files.
+- Keep AI prompt/generation records when AI tools were used.
+- Keep client approval or internal review records for brand content.
+- Keep this report ID with the final published content record.
+
+## ${t("reportMetadata")}
 
 - Filename: ${media?.fileName || "N/A"}
 - File type: ${media?.fileType || "N/A"}
@@ -1066,23 +1205,23 @@ ${report.reasons.map((reason) => `- ${reason}`).join("\n")}
 - C2PA/Content Credentials: ${media ? (media.c2paPresent ? "Detected" : "Not detected") : "N/A"}
 - Software/tool markers: ${media?.softwareMarkers.length ? media.softwareMarkers.join(", ") : "N/A"}
 
-## User Declaration
+## ${t("reportDeclaration")}
 
 - AI involvement level: ${getInvolvementLabel(report.aiInvolvement)}
 - Brand/client campaign: ${report.isClientCampaign ? "Yes" : "No"}
 - Publish copy length: ${report.publishCopyLength}
 
-## Disclosure Recommendation
+## ${t("reportDisclosure")}
 
 ${report.suggestedDisclosure}
 
-## Checklist
+## ${t("reportChecklist")}
 
 | Check | Result | Notes |
 |---|---|---|
 ${checklist}
 
-## Risk Notes
+## ${t("reportRiskNotes")}
 
 - Metadata absence does not prove the content is not AI-generated.
 - Metadata presence does not guarantee compliance.
@@ -1341,6 +1480,9 @@ function applyLanguage(language) {
   document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
     element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
   });
+  if (healthStatus && !isApiHosted()) {
+    healthStatus.textContent = t("healthLocal");
+  }
 }
 
 function updateDocumentMeta() {
@@ -1511,6 +1653,24 @@ async function loadAdminStats() {
   }
 }
 
+async function loadHealthStatus() {
+  if (!isApiHosted()) {
+    healthStatus.textContent = t("healthLocal");
+    return;
+  }
+
+  healthStatus.textContent = t("healthChecking");
+
+  try {
+    const response = await fetch("/api/health", { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.message || "Health check failed");
+    healthStatus.textContent = `${t("healthConnected")} · ${data.latencyMs}ms`;
+  } catch {
+    healthStatus.textContent = t("healthUnavailable");
+  }
+}
+
 function renderRemoteAnalytics(stats) {
   const overview = stats.overview || {};
   const content = stats.content || {};
@@ -1613,6 +1773,10 @@ function getInvolvementLabels() {
 
 function getStatusLabels() {
   return Object.fromEntries(Object.keys(statusLabelKeys).map((key) => [key, t(statusLabelKeys[key]) || key]));
+}
+
+function getRuleStrictnessLabel(value) {
+  return isRequired(value) ? t("ruleRequired") : t("ruleRecommended");
 }
 
 function countByName(events, name) {

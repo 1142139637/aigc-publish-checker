@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "check": "node --check script.js && node --check api/admin-login.js && node --check api/client-info.js && node --check api/track-visit.js && node --check api/track-event.js && node --check api/track-submission.js && node --check api/admin-stats.js"
+    "check": "node --check script.js && node --check api/admin-login.js && node --check api/client-info.js && node --check api/track-visit.js && node --check api/track-event.js && node --check api/track-submission.js && node --check api/admin-stats.js && node --check api/health.js"
   },
   "dependencies": {
     "pg": "^8.16.3"
