@@ -8,6 +8,10 @@ const LANGUAGE_KEY = "aigc_checker_language_v1";
 const translations = {
   "zh-CN": {
     appTitle: "AI 内容发布前自查",
+    metaTitle: "AI 内容发布前自查工具 | AIGC 标识合规检查与元数据报告",
+    metaDescription:
+      "AI 内容发布前自查工具，帮助创作者和内容团队检查 AIGC 标识、AI 使用披露、图片元数据、C2PA Content Credentials，并生成可存档的发布前检查报告。",
+    metaShortDescription: "检查 AI 使用披露、AIGC 标识、图片元数据和 Content Credentials，生成发布前检查报告。",
     seoSummaryTitle: "AI 内容发布前检查、AIGC 标识合规与图片元数据自查",
     seoSummaryBody:
       "这个工具面向创作者、品牌内容团队、代运营机构和电商商家，用于在发布 AI 辅助内容前检查 AI 使用披露、AIGC 标识、图片 EXIF 元数据、C2PA Content Credentials 和发布前留痕报告。",
@@ -161,6 +165,10 @@ const translations = {
   },
   en: {
     appTitle: "AI Publish Readiness Checker",
+    metaTitle: "AI Publish Readiness Checker | AIGC Labeling and Metadata Report",
+    metaDescription:
+      "A pre-publish checker for AI-assisted content that reviews AIGC labeling, AI-use disclosure, image metadata, C2PA Content Credentials, and generates an archivable readiness report.",
+    metaShortDescription: "Check AI-use disclosure, AIGC labels, image metadata, and Content Credentials before publishing.",
     seoSummaryTitle: "AI Content Pre-Publish Check, AIGC Labeling Compliance, and Image Metadata Self-Audit",
     seoSummaryBody:
       "This tool is built for creators, brand content teams, agencies, and ecommerce sellers to check AI-use disclosure, AIGC labeling, image EXIF metadata, C2PA Content Credentials, and pre-publish audit reports before publishing AI-assisted content.",
@@ -389,6 +397,10 @@ translations.es = {
 };
 
 Object.assign(translations.ja, {
+  metaTitle: "AI 公開前チェック | AIGC 表示とメタデータレポート",
+  metaDescription:
+    "AI 支援コンテンツ公開前に、AIGC 表示、AI 利用開示、画像メタデータ、C2PA Content Credentials を確認し、保存可能なチェックレポートを生成します。",
+  metaShortDescription: "AI 利用開示、AIGC 表示、画像メタデータ、Content Credentials を公開前に確認します。",
   chooseFile: "ファイルを選択",
   noFileChosen: "ファイルが選択されていません",
   seoSummaryTitle: "AI コンテンツ公開前チェック、AIGC 表示コンプライアンス、画像メタデータ自己点検",
@@ -397,6 +409,10 @@ Object.assign(translations.ja, {
 });
 
 Object.assign(translations.ko, {
+  metaTitle: "AI 게시 전 점검 도구 | AIGC 표시 및 메타데이터 보고서",
+  metaDescription:
+    "AI 보조 콘텐츠 게시 전에 AIGC 표시, AI 사용 공개, 이미지 메타데이터, C2PA Content Credentials를 확인하고 저장 가능한 점검 보고서를 생성합니다.",
+  metaShortDescription: "게시 전 AI 사용 공개, AIGC 표시, 이미지 메타데이터, Content Credentials를 확인합니다.",
   chooseFile: "파일 선택",
   noFileChosen: "선택된 파일 없음",
   seoSummaryTitle: "AI 콘텐츠 게시 전 점검, AIGC 표시 준수, 이미지 메타데이터 자체 확인",
@@ -405,6 +421,10 @@ Object.assign(translations.ko, {
 });
 
 Object.assign(translations.es, {
+  metaTitle: "Revisión previa de contenido con IA | Etiquetado AIGC y metadatos",
+  metaDescription:
+    "Herramienta para revisar antes de publicar contenido asistido por IA: divulgación del uso de IA, etiquetado AIGC, metadatos de imagen, C2PA Content Credentials e informe archivable.",
+  metaShortDescription: "Revisa divulgación de IA, etiquetas AIGC, metadatos de imagen y Content Credentials antes de publicar.",
   chooseFile: "Elegir archivo",
   noFileChosen: "Ningún archivo seleccionado",
   seoSummaryTitle: "Revisión previa de contenido con IA, cumplimiento de etiquetado AIGC y metadatos de imagen",
@@ -1274,7 +1294,7 @@ function getLanguageFromCountry(country) {
 function applyLanguage(language) {
   currentLanguage = translations[language] ? language : "en";
   document.documentElement.lang = currentLanguage;
-  document.title = t("appTitle");
+  updateDocumentMeta();
   languageSelect.value = currentLanguage;
 
   document.querySelectorAll("[data-i18n]").forEach((element) => {
@@ -1286,6 +1306,54 @@ function applyLanguage(language) {
   document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
     element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
   });
+}
+
+function updateDocumentMeta() {
+  const title = t("metaTitle");
+  const description = t("metaDescription");
+  const shortDescription = t("metaShortDescription");
+
+  document.title = title;
+  setMetaContent("#metaDescription", description);
+  setMetaContent("#ogTitle", title);
+  setMetaContent("#ogDescription", shortDescription);
+  setMetaContent("#twitterTitle", title);
+  setMetaContent("#twitterDescription", shortDescription);
+
+  const structuredData = document.querySelector("#structuredData");
+  if (structuredData) {
+    structuredData.textContent = JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        name: t("appTitle"),
+        alternateName: "AIGC Publish Readiness Checker",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        url: "https://aigc-publish-checker-cz74.vercel.app/",
+        description,
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+        },
+        featureList: [
+          "AIGC labeling checklist",
+          "AI disclosure suggestion",
+          "Image metadata inspection",
+          "C2PA Content Credentials check",
+          "Markdown report export",
+        ],
+      },
+      null,
+      2,
+    );
+  }
+}
+
+function setMetaContent(selector, content) {
+  const element = document.querySelector(selector);
+  if (element) element.setAttribute("content", content);
 }
 
 function updateFileNameLabel() {
