@@ -3,6 +3,245 @@ const ANALYTICS_KEY = "aigc_checker_analytics_events_v1";
 const SUBMISSIONS_KEY = "aigc_checker_submissions_v1";
 const ADMIN_CONFIG_PATH = "./admin-config.json";
 const ADMIN_SESSION_KEY = "aigc_checker_admin_authenticated_v1";
+const LANGUAGE_KEY = "aigc_checker_language_v1";
+
+const translations = {
+  "zh-CN": {
+    appTitle: "AI 内容发布前自查",
+    languageLabel: "语言",
+    step1: "Step 1",
+    step2: "Step 2",
+    submitContent: "提交内容",
+    submitSummary: "本地生成元数据摘要、披露建议和可存档 Markdown 报告。",
+    targetPlatform: "目标平台",
+    platformGeneric: "通用中文平台",
+    aiInvolvementLabel: "AI 参与程度",
+    involvementNone: "未使用 AI",
+    involvementAssisted: "AI 辅助润色",
+    involvementDraft: "AI 生成初稿，人工修改",
+    involvementMostly: "主要由 AI 生成",
+    involvementUnknown: "不确定",
+    clientCampaign: "这是品牌/客户发布内容",
+    imageFile: "图片文件",
+    publishCopy: "待发布文案",
+    publishCopyPlaceholder: "粘贴准备发布的标题、正文或说明...",
+    saveSubmission: "保存本次提交内容用于本地分析",
+    privacyNote: "不上传数据。勾选后会在本机保存文案原文和图片元信息，用来分析用户行为与内容习惯；不保存图片文件本身。",
+    generateReport: "生成报告",
+    clear: "清空",
+    checkResult: "检查结果",
+    emptyState: "选择平台、上传图片或粘贴文案后生成报告。",
+    pendingCheck: "待检查",
+    beforePublish: "发布前要处理",
+    suggestedDisclosure: "建议披露文案",
+    copy: "复制",
+    copied: "已复制",
+    fileInfo: "文件信息",
+    checklistTitle: "检查清单",
+    downloadMarkdown: "下载 Markdown",
+    adminEntry: "管理员入口",
+    adminSummary: "输入管理员密码后查看用户行为和提交内容分析。",
+    password: "密码",
+    passwordError: "密码错误",
+    adminConfigError: "管理员配置读取失败",
+    adminApiError: "管理员接口不可用",
+    enterAnalytics: "进入分析页",
+    backToChecker: "返回自查工具",
+    behaviorAnalytics: "用户行为分析",
+    visits: "访问次数",
+    reports: "生成报告",
+    savedSubmissions: "保存提交",
+    uniqueIp: "独立 IP",
+    platformPreference: "平台偏好",
+    trafficAnalytics: "访问来源分析",
+    conversionRate: "转化率",
+    ipVisits: "已识别 IP 访问",
+    countryCount: "国家/地区数",
+    cityCount: "城市数",
+    ipDistribution: "IP 分布",
+    recentIps: "最近访问 IP",
+    contentAnalytics: "提交内容分析",
+    avgCopyLength: "平均文案长度",
+    clientRate: "客户内容占比",
+    imageRate: "上传图片占比",
+    riskRate: "高风险占比",
+    keywords: "高频词",
+    recentSubmissions: "最近提交",
+    eventDetails: "事件明细",
+    exportAnalytics: "导出埋点",
+    exportSubmissions: "导出提交内容",
+    clearAnalytics: "清空埋点",
+    clearSubmissions: "清空提交内容",
+    statusPass: "可发布前复核",
+    statusReview: "需要补充后发布",
+    statusHighRisk: "高风险，先别发布",
+    checklistPass: "通过",
+    checklistReview: "复核",
+    checklistMissing: "缺失",
+    checklistNA: "不适用",
+    noImage: "未上传图片",
+    textOnlyScope: "仅检查文案披露",
+    detected: "检测到",
+    notDetected: "未检测到",
+    noCommonMarkers: "未检测到常见标记",
+    fileName: "文件名",
+    fileType: "类型",
+    fileSize: "大小",
+    image: "图片",
+  },
+  en: {
+    appTitle: "AI Publish Readiness Checker",
+    languageLabel: "Language",
+    step1: "Step 1",
+    step2: "Step 2",
+    submitContent: "Submit Content",
+    submitSummary: "Generate local metadata summary, disclosure suggestions, and an archivable Markdown report.",
+    targetPlatform: "Target Platform",
+    platformGeneric: "Generic Platform",
+    aiInvolvementLabel: "AI Involvement",
+    involvementNone: "No AI used",
+    involvementAssisted: "AI-assisted editing",
+    involvementDraft: "AI draft, human revised",
+    involvementMostly: "Mostly AI-generated",
+    involvementUnknown: "Not sure",
+    clientCampaign: "This is brand/client content",
+    imageFile: "Image File",
+    publishCopy: "Publish Copy",
+    publishCopyPlaceholder: "Paste the title, body, or description to publish...",
+    saveSubmission: "Save this submission for local analysis",
+    privacyNote: "No upload. If checked, copy text and image metadata are saved locally for behavior and content analysis; image files are not saved.",
+    generateReport: "Generate Report",
+    clear: "Clear",
+    checkResult: "Check Result",
+    emptyState: "Select a platform, upload an image, or paste copy to generate a report.",
+    pendingCheck: "Pending",
+    beforePublish: "Before Publishing",
+    suggestedDisclosure: "Suggested Disclosure",
+    copy: "Copy",
+    copied: "Copied",
+    fileInfo: "File Info",
+    checklistTitle: "Checklist",
+    downloadMarkdown: "Download Markdown",
+    adminEntry: "Admin Entry",
+    adminSummary: "Enter admin password to view behavior and submission analytics.",
+    password: "Password",
+    passwordError: "Incorrect password",
+    adminConfigError: "Admin config failed to load",
+    adminApiError: "Admin API unavailable",
+    enterAnalytics: "Enter Analytics",
+    backToChecker: "Back to Checker",
+    behaviorAnalytics: "User Behavior Analytics",
+    visits: "Visits",
+    reports: "Reports",
+    savedSubmissions: "Saved Submissions",
+    uniqueIp: "Unique IPs",
+    platformPreference: "Platform Preference",
+    trafficAnalytics: "Traffic Analytics",
+    conversionRate: "Conversion Rate",
+    ipVisits: "Identified IP Visits",
+    countryCount: "Countries/Regions",
+    cityCount: "Cities",
+    ipDistribution: "IP Distribution",
+    recentIps: "Recent IP Visits",
+    contentAnalytics: "Submission Analytics",
+    avgCopyLength: "Avg Copy Length",
+    clientRate: "Client Content Rate",
+    imageRate: "Image Upload Rate",
+    riskRate: "High Risk Rate",
+    keywords: "Keywords",
+    recentSubmissions: "Recent Submissions",
+    eventDetails: "Event Details",
+    exportAnalytics: "Export Events",
+    exportSubmissions: "Export Submissions",
+    clearAnalytics: "Clear Events",
+    clearSubmissions: "Clear Submissions",
+    statusPass: "Ready for final review",
+    statusReview: "Needs fixes before publishing",
+    statusHighRisk: "High risk, do not publish yet",
+    checklistPass: "Pass",
+    checklistReview: "Review",
+    checklistMissing: "Missing",
+    checklistNA: "N/A",
+    noImage: "No image uploaded",
+    textOnlyScope: "Text disclosure only",
+    detected: "Detected",
+    notDetected: "Not detected",
+    noCommonMarkers: "No common markers detected",
+    fileName: "Filename",
+    fileType: "Type",
+    fileSize: "Size",
+    image: "Image",
+  },
+};
+
+translations.ja = {
+  ...translations.en,
+  appTitle: "AI 公開前チェック",
+  languageLabel: "言語",
+  submitContent: "コンテンツを送信",
+  submitSummary: "メタデータ概要、開示文案、保存用 Markdown レポートをローカルで生成します。",
+  targetPlatform: "対象プラットフォーム",
+  platformGeneric: "汎用プラットフォーム",
+  aiInvolvementLabel: "AI の関与度",
+  clientCampaign: "ブランド/クライアント向けコンテンツ",
+  imageFile: "画像ファイル",
+  publishCopy: "公開文案",
+  generateReport: "レポート生成",
+  clear: "クリア",
+  checkResult: "チェック結果",
+  suggestedDisclosure: "推奨開示文案",
+  copy: "コピー",
+  copied: "コピー済み",
+  downloadMarkdown: "Markdown をダウンロード",
+  password: "パスワード",
+  passwordError: "パスワードが違います",
+};
+
+translations.ko = {
+  ...translations.en,
+  appTitle: "AI 게시 전 점검",
+  languageLabel: "언어",
+  submitContent: "콘텐츠 제출",
+  submitSummary: "메타데이터 요약, 공개 문구, 보관용 Markdown 보고서를 로컬에서 생성합니다.",
+  targetPlatform: "대상 플랫폼",
+  platformGeneric: "일반 플랫폼",
+  aiInvolvementLabel: "AI 참여 정도",
+  clientCampaign: "브랜드/고객용 콘텐츠입니다",
+  imageFile: "이미지 파일",
+  publishCopy: "게시 문구",
+  generateReport: "보고서 생성",
+  clear: "초기화",
+  checkResult: "점검 결과",
+  suggestedDisclosure: "권장 공개 문구",
+  copy: "복사",
+  copied: "복사됨",
+  downloadMarkdown: "Markdown 다운로드",
+  password: "비밀번호",
+  passwordError: "비밀번호가 올바르지 않습니다",
+};
+
+translations.es = {
+  ...translations.en,
+  appTitle: "Revisión previa de contenido con IA",
+  languageLabel: "Idioma",
+  submitContent: "Enviar contenido",
+  submitSummary: "Genera un resumen de metadatos, sugerencias de divulgación y un informe Markdown local.",
+  targetPlatform: "Plataforma objetivo",
+  platformGeneric: "Plataforma genérica",
+  aiInvolvementLabel: "Participación de IA",
+  clientCampaign: "Contenido de marca/cliente",
+  imageFile: "Archivo de imagen",
+  publishCopy: "Texto a publicar",
+  generateReport: "Generar informe",
+  clear: "Limpiar",
+  checkResult: "Resultado",
+  suggestedDisclosure: "Divulgación sugerida",
+  copy: "Copiar",
+  copied: "Copiado",
+  downloadMarkdown: "Descargar Markdown",
+  password: "Contraseña",
+  passwordError: "Contraseña incorrecta",
+};
 
 const platformNames = {
   generic_cn: "通用中文平台",
@@ -42,6 +281,7 @@ const stopWords = new Set([
 ]);
 
 const pages = document.querySelectorAll(".page");
+const languageSelect = document.querySelector("#languageSelect");
 const adminLoginForm = document.querySelector("#adminLoginForm");
 const adminPasswordInput = document.querySelector("#adminPassword");
 const adminLoginError = document.querySelector("#adminLoginError");
@@ -90,6 +330,7 @@ const clearSubmissionsButton = document.querySelector("#clearSubmissionsButton")
 
 let currentReport = null;
 let adminPassword = "";
+let currentLanguage = "zh-CN";
 let clientInfo = {
   ip: "",
   country: "",
@@ -103,6 +344,8 @@ initApp();
 async function initApp() {
   adminPassword = await loadAdminPassword();
   clientInfo = await loadClientInfo();
+  currentLanguage = getInitialLanguage(clientInfo.country);
+  applyLanguage(currentLanguage);
   initRoute();
   trackEvent("page_view", {
     ruleVersion: RULE_VERSION,
@@ -112,11 +355,23 @@ async function initApp() {
   renderAnalytics();
 }
 
+languageSelect.addEventListener("change", () => {
+  currentLanguage = languageSelect.value;
+  localStorage.setItem(LANGUAGE_KEY, currentLanguage);
+  applyLanguage(currentLanguage);
+  if (currentReport) renderReport(currentReport);
+  renderAnalytics();
+  trackEvent("language_changed", {
+    language: currentLanguage,
+    country: clientInfo.country,
+  });
+});
+
 adminLoginForm.addEventListener("submit", (event) => {
   event.preventDefault();
   verifyAdminPassword(adminPasswordInput.value).then((isValid) => {
     if (!isValid) {
-      adminLoginError.textContent = "密码错误";
+      adminLoginError.textContent = t("passwordError");
       adminLoginError.classList.remove("hidden");
       trackEvent("admin_login_failed");
       renderAnalytics();
@@ -179,9 +434,9 @@ copyDisclosureButton.addEventListener("click", async () => {
     status: currentReport.status,
   });
   renderAnalytics();
-  copyDisclosureButton.textContent = "已复制";
+  copyDisclosureButton.textContent = t("copied");
   window.setTimeout(() => {
-    copyDisclosureButton.textContent = "复制";
+    copyDisclosureButton.textContent = t("copy");
   }, 1200);
 });
 
@@ -419,19 +674,19 @@ function renderReport(report) {
 function renderMetadata(media) {
   if (!media) {
     return `
-      <dt>图片</dt><dd>未上传</dd>
-      <dt>范围</dt><dd>仅检查文案披露</dd>
+      <dt>${t("image")}</dt><dd>${t("noImage")}</dd>
+      <dt>${t("fileType")}</dt><dd>${t("textOnlyScope")}</dd>
     `;
   }
 
   const rows = [
-    ["文件名", media.fileName],
-    ["类型", media.fileType],
-    ["大小", formatBytes(media.fileSizeBytes)],
+    [t("fileName"), media.fileName],
+    [t("fileType"), media.fileType],
+    [t("fileSize"), formatBytes(media.fileSizeBytes)],
     ["SHA-256", media.sha256],
-    ["EXIF", media.exifPresent ? "检测到" : "未检测到"],
-    ["C2PA", media.c2paPresent ? "检测到" : "未检测到"],
-    ["工具标记", media.softwareMarkers.length ? media.softwareMarkers.join(", ") : "未检测到常见标记"],
+    ["EXIF", media.exifPresent ? t("detected") : t("notDetected")],
+    ["C2PA", media.c2paPresent ? t("detected") : t("notDetected")],
+    ["Tool markers", media.softwareMarkers.length ? media.softwareMarkers.join(", ") : t("noCommonMarkers")],
   ];
 
   return rows.map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>`).join("");
@@ -510,19 +765,19 @@ function downloadMarkdown(markdown, reportId) {
 
 function getStatusLabel(status) {
   const labels = {
-    pass: "可发布前复核",
-    needs_review: "需要补充后发布",
-    high_risk: "高风险，先别发布",
+    pass: t("statusPass"),
+    needs_review: t("statusReview"),
+    high_risk: t("statusHighRisk"),
   };
   return labels[status];
 }
 
 function getChecklistLabel(result) {
   const labels = {
-    pass: "通过",
-    review: "复核",
-    missing: "缺失",
-    not_applicable: "不适用",
+    pass: t("checklistPass"),
+    review: t("checklistReview"),
+    missing: t("checklistMissing"),
+    not_applicable: t("checklistNA"),
   };
   return labels[result];
 }
@@ -575,7 +830,7 @@ async function loadAdminPassword() {
     const config = await response.json();
     return String(config.adminPassword || "");
   } catch {
-    adminLoginError.textContent = "管理员配置读取失败";
+    adminLoginError.textContent = t("adminConfigError");
     adminLoginError.classList.remove("hidden");
     return "";
   }
@@ -626,7 +881,7 @@ async function verifyAdminPassword(password) {
       const result = await response.json();
       return result.ok === true;
     } catch {
-      adminLoginError.textContent = "管理员接口不可用";
+      adminLoginError.textContent = t("adminApiError");
       return false;
     }
   }
@@ -644,6 +899,72 @@ function isAdminAuthenticated() {
 
 function isHostedHttp() {
   return window.location.protocol === "http:" || window.location.protocol === "https:";
+}
+
+function getInitialLanguage(country) {
+  const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
+  if (translations[savedLanguage]) return savedLanguage;
+
+  const countryLanguage = getLanguageFromCountry(country);
+  if (countryLanguage) return countryLanguage;
+
+  const browserLanguage = navigator.language || "";
+  if (browserLanguage.startsWith("zh")) return "zh-CN";
+  if (browserLanguage.startsWith("ja")) return "ja";
+  if (browserLanguage.startsWith("ko")) return "ko";
+  if (browserLanguage.startsWith("es")) return "es";
+  return "en";
+}
+
+function getLanguageFromCountry(country) {
+  const normalized = String(country || "").toUpperCase();
+  if (["CN", "HK", "MO", "TW"].includes(normalized)) return "zh-CN";
+  if (normalized === "JP") return "ja";
+  if (normalized === "KR") return "ko";
+  if (
+    [
+      "ES",
+      "MX",
+      "AR",
+      "CO",
+      "CL",
+      "PE",
+      "VE",
+      "EC",
+      "GT",
+      "CU",
+      "BO",
+      "DO",
+      "HN",
+      "PY",
+      "SV",
+      "NI",
+      "CR",
+      "PA",
+      "UY",
+    ].includes(normalized)
+  ) {
+    return "es";
+  }
+  return "en";
+}
+
+function applyLanguage(language) {
+  currentLanguage = translations[language] ? language : "en";
+  document.documentElement.lang = currentLanguage;
+  document.title = t("appTitle");
+  languageSelect.value = currentLanguage;
+
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+  });
+}
+
+function t(key) {
+  return translations[currentLanguage]?.[key] || translations.en[key] || key;
 }
 
 function trackEvent(name, properties = {}) {

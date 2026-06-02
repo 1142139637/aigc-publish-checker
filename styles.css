@@ -54,6 +54,15 @@ textarea {
   margin-bottom: 0;
 }
 
+.language-control {
+  display: grid;
+  gap: 6px;
+  min-width: 180px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .page {
   display: none;
 }

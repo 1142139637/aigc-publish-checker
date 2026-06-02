@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI 内容发布前自查</title>
+    <title>AI Publish Readiness Checker</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -11,23 +11,33 @@
       <header class="topbar">
         <div>
           <p class="eyebrow">AIGC Publish Readiness</p>
-          <h1>AI 内容发布前自查</h1>
+          <h1 data-i18n="appTitle">AI 内容发布前自查</h1>
         </div>
+        <label class="language-control">
+          <span data-i18n="languageLabel">语言</span>
+          <select id="languageSelect" aria-label="Language">
+            <option value="zh-CN">简体中文</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
       </header>
 
       <section id="checkerPage" class="page active">
         <section class="workspace">
           <form id="checkForm" class="panel input-panel">
             <div class="panel-header">
-              <p class="eyebrow">Step 1</p>
-              <h2>提交内容</h2>
-              <p class="summary">本地生成元数据摘要、披露建议和可存档 Markdown 报告。</p>
+              <p class="eyebrow" data-i18n="step1">Step 1</p>
+              <h2 data-i18n="submitContent">提交内容</h2>
+              <p class="summary" data-i18n="submitSummary">本地生成元数据摘要、披露建议和可存档 Markdown 报告。</p>
             </div>
 
             <label class="field">
-              <span>目标平台</span>
+              <span data-i18n="targetPlatform">目标平台</span>
               <select id="platform" name="platform">
-                <option value="generic_cn">通用中文平台</option>
+                <option value="generic_cn" data-i18n="platformGeneric">通用中文平台</option>
                 <option value="xiaohongshu">小红书</option>
                 <option value="douyin">抖音</option>
                 <option value="wechat_official">微信公众号</option>
@@ -36,86 +46,86 @@
             </label>
 
             <label class="field">
-              <span>AI 参与程度</span>
+              <span data-i18n="aiInvolvementLabel">AI 参与程度</span>
               <select id="aiInvolvement" name="aiInvolvement">
-                <option value="assisted_editing">AI 辅助润色</option>
-                <option value="ai_draft_human_revised">AI 生成初稿，人工修改</option>
-                <option value="mostly_ai_generated">主要由 AI 生成</option>
-                <option value="unknown">不确定</option>
-                <option value="none">未使用 AI</option>
+                <option value="assisted_editing" data-i18n="involvementAssisted">AI 辅助润色</option>
+                <option value="ai_draft_human_revised" data-i18n="involvementDraft">AI 生成初稿，人工修改</option>
+                <option value="mostly_ai_generated" data-i18n="involvementMostly">主要由 AI 生成</option>
+                <option value="unknown" data-i18n="involvementUnknown">不确定</option>
+                <option value="none" data-i18n="involvementNone">未使用 AI</option>
               </select>
             </label>
 
             <label class="field check-row">
               <input id="clientCampaign" type="checkbox" />
-              <span>这是品牌/客户发布内容</span>
+              <span data-i18n="clientCampaign">这是品牌/客户发布内容</span>
             </label>
 
             <label class="field">
-              <span>图片文件</span>
+              <span data-i18n="imageFile">图片文件</span>
               <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp" />
             </label>
 
             <label class="field">
-              <span>待发布文案</span>
-              <textarea id="publishCopy" rows="9" placeholder="粘贴准备发布的标题、正文或说明..."></textarea>
+              <span data-i18n="publishCopy">待发布文案</span>
+              <textarea id="publishCopy" rows="9" placeholder="粘贴准备发布的标题、正文或说明..." data-i18n-placeholder="publishCopyPlaceholder"></textarea>
             </label>
 
             <label class="field check-row consent-row">
               <input id="saveSubmission" type="checkbox" />
-              <span>保存本次提交内容用于本地分析</span>
+              <span data-i18n="saveSubmission">保存本次提交内容用于本地分析</span>
             </label>
 
             <div class="privacy-note">
-              不上传数据。勾选后会在本机保存文案原文和图片元信息，用来分析用户行为与内容习惯；不保存图片文件本身。
+              <span data-i18n="privacyNote">不上传数据。勾选后会在本机保存文案原文和图片元信息，用来分析用户行为与内容习惯；不保存图片文件本身。</span>
             </div>
 
             <div class="actions">
-              <button type="submit" class="primary">生成报告</button>
-              <button type="button" id="clearButton" class="secondary">清空</button>
+              <button type="submit" class="primary" data-i18n="generateReport">生成报告</button>
+              <button type="button" id="clearButton" class="secondary" data-i18n="clear">清空</button>
             </div>
           </form>
 
           <section class="panel report-panel">
             <div class="panel-header compact">
-              <p class="eyebrow">Step 2</p>
-              <h2>检查结果</h2>
+              <p class="eyebrow" data-i18n="step2">Step 2</p>
+              <h2 data-i18n="checkResult">检查结果</h2>
             </div>
 
             <div id="emptyState" class="empty-state">
-              选择平台、上传图片或粘贴文案后生成报告。
+              <span data-i18n="emptyState">选择平台、上传图片或粘贴文案后生成报告。</span>
             </div>
 
             <div id="reportView" class="report-view hidden">
               <div class="status-strip" id="statusStrip">
-                <span id="statusText">待检查</span>
+                <span id="statusText" data-i18n="pendingCheck">待检查</span>
               </div>
 
               <div class="report-section">
-                <h3>发布前要处理</h3>
+                <h3 data-i18n="beforePublish">发布前要处理</h3>
                 <ul id="reasonList"></ul>
               </div>
 
               <div class="report-section">
-                <h3>建议披露文案</h3>
+                <h3 data-i18n="suggestedDisclosure">建议披露文案</h3>
                 <div class="copy-box">
                   <p id="disclosureText"></p>
-                  <button id="copyDisclosureButton" type="button">复制</button>
+                  <button id="copyDisclosureButton" type="button" data-i18n="copy">复制</button>
                 </div>
               </div>
 
               <div class="report-section">
-                <h3>文件信息</h3>
+                <h3 data-i18n="fileInfo">文件信息</h3>
                 <dl id="metadataList" class="metadata-list"></dl>
               </div>
 
               <div class="report-section">
-                <h3>检查清单</h3>
+                <h3 data-i18n="checklistTitle">检查清单</h3>
                 <div id="checklist" class="checklist"></div>
               </div>
 
               <div class="actions">
-                <button id="downloadButton" type="button" class="primary">下载 Markdown</button>
+                <button id="downloadButton" type="button" class="primary" data-i18n="downloadMarkdown">下载 Markdown</button>
               </div>
             </div>
           </section>
@@ -127,20 +137,20 @@
           <form id="adminLoginForm" class="panel admin-login-panel">
             <div class="panel-header">
               <p class="eyebrow">Admin</p>
-              <h2>管理员入口</h2>
-              <p class="summary">输入管理员密码后查看用户行为和提交内容分析。</p>
+              <h2 data-i18n="adminEntry">管理员入口</h2>
+              <p class="summary" data-i18n="adminSummary">输入管理员密码后查看用户行为和提交内容分析。</p>
             </div>
 
             <label class="field">
-              <span>密码</span>
+              <span data-i18n="password">密码</span>
               <input id="adminPassword" type="password" autocomplete="current-password" />
             </label>
 
-            <div id="adminLoginError" class="error-text hidden">密码错误</div>
+            <div id="adminLoginError" class="error-text hidden" data-i18n="passwordError">密码错误</div>
 
             <div class="actions">
-              <button type="submit" class="primary">进入分析页</button>
-              <button id="backToCheckerButton" type="button" class="secondary">返回自查工具</button>
+              <button type="submit" class="primary" data-i18n="enterAnalytics">进入分析页</button>
+              <button id="backToCheckerButton" type="button" class="secondary" data-i18n="backToChecker">返回自查工具</button>
             </div>
           </form>
         </section>
@@ -151,36 +161,36 @@
           <section class="panel analytics-panel">
             <div class="panel-header compact">
               <p class="eyebrow">Overview</p>
-              <h2>用户行为分析</h2>
+              <h2 data-i18n="behaviorAnalytics">用户行为分析</h2>
             </div>
 
             <div class="metric-grid">
               <div class="metric-card">
-                <span>访问次数</span>
+                <span data-i18n="visits">访问次数</span>
                 <strong id="metricVisits">0</strong>
               </div>
               <div class="metric-card">
-                <span>生成报告</span>
+                <span data-i18n="reports">生成报告</span>
                 <strong id="metricReports">0</strong>
               </div>
               <div class="metric-card">
-                <span>保存提交</span>
+                <span data-i18n="savedSubmissions">保存提交</span>
                 <strong id="metricSubmissions">0</strong>
               </div>
               <div class="metric-card">
-                <span>独立 IP</span>
+                <span data-i18n="uniqueIp">独立 IP</span>
                 <strong id="metricUniqueIps">0</strong>
               </div>
             </div>
 
             <div class="analysis-grid">
               <div class="report-section">
-                <h3>平台偏好</h3>
+                <h3 data-i18n="platformPreference">平台偏好</h3>
                 <div id="platformChart" class="bar-list"></div>
               </div>
 
               <div class="report-section">
-                <h3>AI 参与程度</h3>
+                <h3 data-i18n="aiInvolvementLabel">AI 参与程度</h3>
                 <div id="involvementChart" class="bar-list"></div>
               </div>
             </div>
@@ -189,36 +199,36 @@
           <section class="panel analytics-panel">
             <div class="panel-header compact">
               <p class="eyebrow">Traffic</p>
-              <h2>访问来源分析</h2>
+              <h2 data-i18n="trafficAnalytics">访问来源分析</h2>
             </div>
 
             <div class="metric-grid">
               <div class="metric-card">
-                <span>转化率</span>
+                <span data-i18n="conversionRate">转化率</span>
                 <strong id="metricConversion">0%</strong>
               </div>
               <div class="metric-card">
-                <span>已识别 IP 访问</span>
+                <span data-i18n="ipVisits">已识别 IP 访问</span>
                 <strong id="metricIpVisits">0</strong>
               </div>
               <div class="metric-card">
-                <span>国家/地区数</span>
+                <span data-i18n="countryCount">国家/地区数</span>
                 <strong id="metricCountryCount">0</strong>
               </div>
               <div class="metric-card">
-                <span>城市数</span>
+                <span data-i18n="cityCount">城市数</span>
                 <strong id="metricCityCount">0</strong>
               </div>
             </div>
 
             <div class="analysis-grid">
               <div class="report-section">
-                <h3>IP 分布</h3>
+                <h3 data-i18n="ipDistribution">IP 分布</h3>
                 <div id="ipChart" class="bar-list"></div>
               </div>
 
               <div class="report-section">
-                <h3>最近访问 IP</h3>
+                <h3 data-i18n="recentIps">最近访问 IP</h3>
                 <div id="ipList" class="ip-list"></div>
               </div>
             </div>
@@ -227,36 +237,36 @@
           <section class="panel analytics-panel">
             <div class="panel-header compact">
               <p class="eyebrow">Content</p>
-              <h2>提交内容分析</h2>
+              <h2 data-i18n="contentAnalytics">提交内容分析</h2>
             </div>
 
             <div class="metric-grid">
               <div class="metric-card">
-                <span>平均文案长度</span>
+                <span data-i18n="avgCopyLength">平均文案长度</span>
                 <strong id="metricAvgCopyLength">0</strong>
               </div>
               <div class="metric-card">
-                <span>客户内容占比</span>
+                <span data-i18n="clientRate">客户内容占比</span>
                 <strong id="metricClientRate">0%</strong>
               </div>
               <div class="metric-card">
-                <span>上传图片占比</span>
+                <span data-i18n="imageRate">上传图片占比</span>
                 <strong id="metricImageRate">0%</strong>
               </div>
               <div class="metric-card">
-                <span>高风险占比</span>
+                <span data-i18n="riskRate">高风险占比</span>
                 <strong id="metricRiskRate">0%</strong>
               </div>
             </div>
 
             <div class="analysis-grid">
               <div class="report-section">
-                <h3>高频词</h3>
+                <h3 data-i18n="keywords">高频词</h3>
                 <div id="keywordChart" class="tag-list"></div>
               </div>
 
               <div class="report-section">
-                <h3>最近提交</h3>
+                <h3 data-i18n="recentSubmissions">最近提交</h3>
                 <div id="submissionList" class="submission-list"></div>
               </div>
             </div>
@@ -265,16 +275,16 @@
           <section class="panel analytics-panel">
             <div class="panel-header compact">
               <p class="eyebrow">Events</p>
-              <h2>事件明细</h2>
+              <h2 data-i18n="eventDetails">事件明细</h2>
             </div>
 
             <div id="eventList" class="event-list"></div>
 
             <div class="actions analytics-actions">
-              <button id="exportAnalyticsButton" type="button" class="primary">导出埋点</button>
-              <button id="exportSubmissionsButton" type="button" class="secondary">导出提交内容</button>
-              <button id="clearAnalyticsButton" type="button" class="secondary">清空埋点</button>
-              <button id="clearSubmissionsButton" type="button" class="secondary danger">清空提交内容</button>
+              <button id="exportAnalyticsButton" type="button" class="primary" data-i18n="exportAnalytics">导出埋点</button>
+              <button id="exportSubmissionsButton" type="button" class="secondary" data-i18n="exportSubmissions">导出提交内容</button>
+              <button id="clearAnalyticsButton" type="button" class="secondary" data-i18n="clearAnalytics">清空埋点</button>
+              <button id="clearSubmissionsButton" type="button" class="secondary danger" data-i18n="clearSubmissions">清空提交内容</button>
             </div>
           </section>
         </section>
