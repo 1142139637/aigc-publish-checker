@@ -36,6 +36,8 @@ const translations = {
     involvementUnknown: "不确定",
     clientCampaign: "这是品牌/客户发布内容",
     imageFile: "图片文件",
+    chooseFile: "选择文件",
+    noFileChosen: "未选择任何文件",
     publishCopy: "待发布文案",
     publishCopyPlaceholder: "粘贴准备发布的标题、正文或说明...",
     saveSubmission: "保存本次提交内容用于本地分析",
@@ -187,6 +189,8 @@ const translations = {
     involvementUnknown: "Not sure",
     clientCampaign: "This is brand/client content",
     imageFile: "Image File",
+    chooseFile: "Choose File",
+    noFileChosen: "No file chosen",
     publishCopy: "Publish Copy",
     publishCopyPlaceholder: "Paste the title, body, or description to publish...",
     saveSubmission: "Save this submission for local analysis",
@@ -385,18 +389,24 @@ translations.es = {
 };
 
 Object.assign(translations.ja, {
+  chooseFile: "ファイルを選択",
+  noFileChosen: "ファイルが選択されていません",
   seoSummaryTitle: "AI コンテンツ公開前チェック、AIGC 表示コンプライアンス、画像メタデータ自己点検",
   seoSummaryBody:
     "このツールは、クリエイター、ブランドのコンテンツチーム、運用代行会社、EC 事業者向けに、AI 支援コンテンツ公開前の AI 利用開示、AIGC 表示、画像 EXIF メタデータ、C2PA Content Credentials、公開前記録レポートを確認するためのものです。",
 });
 
 Object.assign(translations.ko, {
+  chooseFile: "파일 선택",
+  noFileChosen: "선택된 파일 없음",
   seoSummaryTitle: "AI 콘텐츠 게시 전 점검, AIGC 표시 준수, 이미지 메타데이터 자체 확인",
   seoSummaryBody:
     "이 도구는 크리에이터, 브랜드 콘텐츠 팀, 운영 대행사, 전자상거래 판매자가 AI 보조 콘텐츠를 게시하기 전에 AI 사용 공개, AIGC 표시, 이미지 EXIF 메타데이터, C2PA Content Credentials, 게시 전 기록 보고서를 확인하도록 돕습니다.",
 });
 
 Object.assign(translations.es, {
+  chooseFile: "Elegir archivo",
+  noFileChosen: "Ningún archivo seleccionado",
   seoSummaryTitle: "Revisión previa de contenido con IA, cumplimiento de etiquetado AIGC y metadatos de imagen",
   seoSummaryBody:
     "Esta herramienta está pensada para creadores, equipos de contenido de marca, agencias y vendedores ecommerce que necesitan revisar la divulgación del uso de IA, el etiquetado AIGC, los metadatos EXIF de imágenes, C2PA Content Credentials y el informe de trazabilidad antes de publicar contenido asistido por IA.",
@@ -478,6 +488,7 @@ const platformInput = document.querySelector("#platform");
 const involvementInput = document.querySelector("#aiInvolvement");
 const clientCampaignInput = document.querySelector("#clientCampaign");
 const imageFileInput = document.querySelector("#imageFile");
+const imageFileName = document.querySelector("#imageFileName");
 const publishCopyInput = document.querySelector("#publishCopy");
 const saveSubmissionInput = document.querySelector("#saveSubmission");
 const clearButton = document.querySelector("#clearButton");
@@ -541,6 +552,7 @@ async function initApp() {
   clientInfo = await loadClientInfo();
   currentLanguage = getInitialLanguage(clientInfo.country);
   applyLanguage(currentLanguage);
+  updateFileNameLabel();
   initRoute();
   trackEvent("page_view", {
     ruleVersion: RULE_VERSION,
@@ -555,6 +567,7 @@ languageSelect.addEventListener("change", () => {
   currentLanguage = languageSelect.value;
   localStorage.setItem(LANGUAGE_KEY, currentLanguage);
   applyLanguage(currentLanguage);
+  updateFileNameLabel();
   if (currentReport) {
     currentReport = relocalizeReport(currentReport);
     renderReport(currentReport);
@@ -564,6 +577,10 @@ languageSelect.addEventListener("change", () => {
     language: currentLanguage,
     country: clientInfo.country,
   });
+});
+
+imageFileInput.addEventListener("change", () => {
+  updateFileNameLabel();
 });
 
 adminLoginForm.addEventListener("submit", async (event) => {
@@ -619,6 +636,7 @@ form.addEventListener("submit", async (event) => {
 
 clearButton.addEventListener("click", () => {
   form.reset();
+  updateFileNameLabel();
   currentReport = null;
   emptyState.classList.remove("hidden");
   reportView.classList.add("hidden");
@@ -1268,6 +1286,11 @@ function applyLanguage(language) {
   document.querySelectorAll("[data-i18n-aria-label]").forEach((element) => {
     element.setAttribute("aria-label", t(element.dataset.i18nAriaLabel));
   });
+}
+
+function updateFileNameLabel() {
+  const file = imageFileInput.files[0];
+  imageFileName.textContent = file ? file.name : t("noFileChosen");
 }
 
 function t(key) {

@@ -118,7 +118,11 @@
 
             <label class="field">
               <span data-i18n="imageFile">图片文件</span>
-              <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+              <span class="file-picker">
+                <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                <span class="file-button" data-i18n="chooseFile">选择文件</span>
+                <span id="imageFileName" class="file-name" data-i18n="noFileChosen">未选择任何文件</span>
+              </span>
             </label>
 
             <label class="field">
