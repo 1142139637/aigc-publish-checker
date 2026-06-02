@@ -9,6 +9,10 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/guides.html</loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://aigc-publish-checker-cz74.vercel.app/ai-content-disclosure.html</loc>
     <priority>0.8</priority>
   </url>
@@ -22,6 +26,18 @@
   </url>
   <url>
     <loc>https://aigc-publish-checker-cz74.vercel.app/douyin-ai-content-checker.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/wechat-ai-content-checker.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/bilibili-ai-content-checker.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://aigc-publish-checker-cz74.vercel.app/ecommerce-ai-product-image-checker.html</loc>
     <priority>0.8</priority>
   </url>
 </urlset>
