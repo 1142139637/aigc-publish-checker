@@ -1,6 +1,7 @@
 const RULE_VERSION = "cn-aigc-publish-readiness-2026-05-v0";
 const ANALYTICS_KEY = "aigc_checker_analytics_events_v1";
 const SUBMISSIONS_KEY = "aigc_checker_submissions_v1";
+const REPORT_HISTORY_KEY = "aigc_checker_report_history_v1";
 const ADMIN_CONFIG_PATH = "./admin-config.json";
 const ADMIN_SESSION_KEY = "aigc_checker_admin_authenticated_v1";
 const LANGUAGE_KEY = "aigc_checker_language_v1";
@@ -68,6 +69,17 @@ const translations = {
     fileInfo: "文件信息",
     checklistTitle: "检查清单",
     downloadMarkdown: "下载 Markdown",
+    downloadPdf: "下载 PDF",
+    viewHistory: "历史记录",
+    historyEyebrow: "历史",
+    historyTitle: "报告历史记录",
+    historySummary: "查看过往检查，按平台或风险状态筛选，并重新打开报告。",
+    historyRiskFilter: "风险状态",
+    historyAllPlatforms: "全部平台",
+    historyAllStatuses: "全部状态",
+    historyEmpty: "暂无历史报告。生成报告后会自动保存在这里。",
+    openReport: "打开报告",
+    reportStarted: "开始检查",
     adminEntry: "管理员入口",
     adminEyebrow: "管理员",
     adminSummary: "输入管理员密码后查看用户行为和提交内容分析。",
@@ -84,6 +96,12 @@ const translations = {
     savedSubmissions: "保存提交",
     uniqueIp: "独立 IP",
     platformPreference: "平台偏好",
+    funnelAnalytics: "转化漏斗",
+    funnelVisits: "访问",
+    funnelStarted: "开始检查",
+    funnelReports: "生成报告",
+    funnelMarkdown: "下载 Markdown",
+    funnelPdf: "下载 PDF",
     trafficAnalytics: "访问来源分析",
     trafficEyebrow: "流量",
     conversionRate: "转化率",
@@ -263,6 +281,17 @@ const translations = {
     fileInfo: "File Info",
     checklistTitle: "Checklist",
     downloadMarkdown: "Download Markdown",
+    downloadPdf: "Download PDF",
+    viewHistory: "History",
+    historyEyebrow: "History",
+    historyTitle: "Report History",
+    historySummary: "Review previous checks, filter by platform or risk, and reopen reports.",
+    historyRiskFilter: "Risk Status",
+    historyAllPlatforms: "All Platforms",
+    historyAllStatuses: "All Statuses",
+    historyEmpty: "No report history yet. Generated reports will be saved here automatically.",
+    openReport: "Open Report",
+    reportStarted: "Started check",
     adminEntry: "Admin Entry",
     adminEyebrow: "Admin",
     adminSummary: "Enter admin password to view behavior and submission analytics.",
@@ -279,6 +308,12 @@ const translations = {
     savedSubmissions: "Saved Submissions",
     uniqueIp: "Unique IPs",
     platformPreference: "Platform Preference",
+    funnelAnalytics: "Conversion Funnel",
+    funnelVisits: "Visits",
+    funnelStarted: "Started Checks",
+    funnelReports: "Generated Reports",
+    funnelMarkdown: "Markdown Downloads",
+    funnelPdf: "PDF Downloads",
     trafficAnalytics: "Traffic Analytics",
     trafficEyebrow: "Traffic",
     conversionRate: "Conversion Rate",
@@ -621,6 +656,8 @@ const imageFileName = document.querySelector("#imageFileName");
 const publishCopyInput = document.querySelector("#publishCopy");
 const saveSubmissionInput = document.querySelector("#saveSubmission");
 const clearButton = document.querySelector("#clearButton");
+const historyButton = document.querySelector("#historyButton");
+const backFromHistoryButton = document.querySelector("#backFromHistoryButton");
 const emptyState = document.querySelector("#emptyState");
 const reportView = document.querySelector("#reportView");
 const statusStrip = document.querySelector("#statusStrip");
@@ -631,6 +668,10 @@ const metadataList = document.querySelector("#metadataList");
 const checklistView = document.querySelector("#checklist");
 const copyDisclosureButton = document.querySelector("#copyDisclosureButton");
 const downloadButton = document.querySelector("#downloadButton");
+const downloadPdfButton = document.querySelector("#downloadPdfButton");
+const historyPlatformFilter = document.querySelector("#historyPlatformFilter");
+const historyRiskFilter = document.querySelector("#historyRiskFilter");
+const historyList = document.querySelector("#historyList");
 const metricVisits = document.querySelector("#metricVisits");
 const metricReports = document.querySelector("#metricReports");
 const metricSubmissions = document.querySelector("#metricSubmissions");
@@ -643,6 +684,7 @@ const metricAvgCopyLength = document.querySelector("#metricAvgCopyLength");
 const metricClientRate = document.querySelector("#metricClientRate");
 const metricImageRate = document.querySelector("#metricImageRate");
 const metricRiskRate = document.querySelector("#metricRiskRate");
+const funnelChart = document.querySelector("#funnelChart");
 const platformChart = document.querySelector("#platformChart");
 const involvementChart = document.querySelector("#involvementChart");
 const ipChart = document.querySelector("#ipChart");
@@ -669,6 +711,7 @@ let adminPassword = "";
 let adminPasswordForStats = "";
 let remoteStats = null;
 let currentLanguage = "zh-CN";
+let hasTrackedCheckStarted = false;
 let clientInfo = {
   ip: "",
   country: "",
@@ -714,8 +757,15 @@ languageSelect.addEventListener("change", () => {
 });
 
 imageFileInput.addEventListener("change", () => {
+  trackCheckStarted();
   updateFileNameLabel();
 });
+
+[platformInput, involvementInput, publishCopyInput, clientCampaignInput, saveSubmissionInput].forEach((element) => {
+  element.addEventListener("change", trackCheckStarted);
+});
+
+publishCopyInput.addEventListener("input", trackCheckStarted, { once: true });
 
 adminLoginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -746,10 +796,24 @@ backToCheckerButton.addEventListener("click", () => {
   renderAnalytics();
 });
 
+historyButton.addEventListener("click", () => {
+  renderHistoryPage();
+  showPage("historyPage");
+  trackEvent("history_opened");
+});
+
+backFromHistoryButton.addEventListener("click", () => {
+  showPage("checkerPage");
+});
+
+historyPlatformFilter.addEventListener("change", renderHistoryList);
+historyRiskFilter.addEventListener("change", renderHistoryList);
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   currentReport = await buildReport();
   renderReport(currentReport);
+  saveReportHistory(currentReport);
   if (saveSubmissionInput.checked) {
     saveSubmission(currentReport);
   }
@@ -798,6 +862,17 @@ downloadButton.addEventListener("click", () => {
   if (!currentReport) return;
   downloadMarkdown(toMarkdown(currentReport), currentReport.reportId);
   trackEvent("report_downloaded", {
+    platform: currentReport.platform,
+    aiInvolvement: currentReport.aiInvolvement,
+    status: currentReport.status,
+  });
+  renderAnalytics();
+});
+
+downloadPdfButton.addEventListener("click", () => {
+  if (!currentReport) return;
+  openPdfReport(currentReport);
+  trackEvent("report_pdf_downloaded", {
     platform: currentReport.platform,
     aiInvolvement: currentReport.aiInvolvement,
     status: currentReport.status,
@@ -1184,6 +1259,84 @@ function renderReport(report) {
     .join("");
 }
 
+function saveReportHistory(report) {
+  const history = getReportHistory().filter((item) => item.reportId !== report.reportId);
+  history.push(report);
+  localStorage.setItem(REPORT_HISTORY_KEY, JSON.stringify(history.slice(-80)));
+}
+
+function getReportHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(REPORT_HISTORY_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function renderHistoryPage() {
+  renderHistoryFilters();
+  renderHistoryList();
+}
+
+function renderHistoryFilters() {
+  const history = getReportHistory();
+  const platformKeys = [...new Set(history.map((report) => report.platform).filter(Boolean))];
+  historyPlatformFilter.innerHTML = [
+    `<option value="">${escapeHtml(t("historyAllPlatforms"))}</option>`,
+    ...platformKeys.map((key) => `<option value="${escapeHtml(key)}">${escapeHtml(getPlatformLabel(key))}</option>`),
+  ].join("");
+  historyRiskFilter.innerHTML = [
+    `<option value="">${escapeHtml(t("historyAllStatuses"))}</option>`,
+    ...Object.keys(statusLabelKeys).map((key) => `<option value="${escapeHtml(key)}">${escapeHtml(getStatusLabel(key))}</option>`),
+  ].join("");
+}
+
+function renderHistoryList() {
+  const platform = historyPlatformFilter.value;
+  const status = historyRiskFilter.value;
+  const reports = getReportHistory()
+    .filter((report) => !platform || report.platform === platform)
+    .filter((report) => !status || report.status === status)
+    .reverse();
+
+  if (reports.length === 0) {
+    historyList.innerHTML = `<div class="empty-row">${escapeHtml(t("historyEmpty"))}</div>`;
+    return;
+  }
+
+  historyList.innerHTML = reports
+    .map((report) => {
+      const preview = report.publishCopy.length > 150 ? `${report.publishCopy.slice(0, 150)}...` : report.publishCopy;
+      return `
+        <article class="history-item">
+          <div class="history-item-main">
+            <strong>${escapeHtml(getPlatformLabel(report.platform))} · ${escapeHtml(getStatusLabel(report.status))}</strong>
+            <span>${formatDateTime(report.createdAt)} · ${escapeHtml(getInvolvementLabel(report.aiInvolvement))} · ${report.publishCopyLength} chars</span>
+            <p>${escapeHtml(preview || t("noPublishCopy"))}</p>
+          </div>
+          <button type="button" class="secondary" data-report-id="${escapeHtml(report.reportId)}">${escapeHtml(t("openReport"))}</button>
+        </article>
+      `;
+    })
+    .join("");
+
+  historyList.querySelectorAll("[data-report-id]").forEach((button) => {
+    button.addEventListener("click", () => openHistoryReport(button.dataset.reportId));
+  });
+}
+
+function openHistoryReport(reportId) {
+  const report = getReportHistory().find((item) => item.reportId === reportId);
+  if (!report) return;
+  currentReport = relocalizeReport(report);
+  renderReport(currentReport);
+  showPage("checkerPage");
+  trackEvent("history_report_opened", {
+    platform: currentReport.platform,
+    status: currentReport.status,
+  });
+}
+
 function renderMetadata(media) {
   if (!media) {
     return `
@@ -1287,6 +1440,79 @@ function downloadMarkdown(markdown, reportId) {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function openPdfReport(report) {
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${escapeHtml(report.reportId)}</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #1d2327; margin: 32px; line-height: 1.6; }
+          h1 { font-size: 24px; margin-bottom: 8px; }
+          h2 { border-top: 1px solid #d9dedb; padding-top: 14px; margin-top: 22px; font-size: 18px; }
+          .meta { color: #687076; margin-bottom: 18px; }
+          .status { display: inline-block; padding: 6px 10px; border-radius: 6px; font-weight: 700; background: #eef7f4; }
+          li { margin-bottom: 6px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          th, td { border: 1px solid #d9dedb; padding: 8px; text-align: left; vertical-align: top; }
+          @media print { body { margin: 18mm; } }
+        </style>
+      </head>
+      <body>
+        ${toReportHtml(report)}
+        <script>window.addEventListener("load", () => window.print());</script>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+function toReportHtml(report) {
+  const media = report.media;
+  return `
+    <h1>${escapeHtml(t("reportTitle"))}</h1>
+    <div class="meta">${escapeHtml(report.reportId)} · ${escapeHtml(report.createdAt)}</div>
+    <div class="status">${escapeHtml(getStatusLabel(report.status))}</div>
+    <h2>${escapeHtml(t("reportSummary"))}</h2>
+    <ul>
+      <li>Platform: ${escapeHtml(getPlatformLabel(report.platform))}</li>
+      <li>AI involvement: ${escapeHtml(getInvolvementLabel(report.aiInvolvement))}</li>
+      <li>Copy length: ${report.publishCopyLength}</li>
+      <li>Image: ${report.media ? escapeHtml(t("withImage")) : escapeHtml(t("withoutImage"))}</li>
+    </ul>
+    <h2>${escapeHtml(t("reportActionItems"))}</h2>
+    <ul>${report.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>
+    <h2>${escapeHtml(t("reportDisclosure"))}</h2>
+    <p>${escapeHtml(report.suggestedDisclosure)}</p>
+    <h2>${escapeHtml(t("reportMetadata"))}</h2>
+    <ul>
+      <li>Filename: ${escapeHtml(media?.fileName || "N/A")}</li>
+      <li>File type: ${escapeHtml(media?.fileType || "N/A")}</li>
+      <li>File size: ${media ? escapeHtml(formatBytes(media.fileSizeBytes)) : "N/A"}</li>
+      <li>SHA-256: ${escapeHtml(media?.sha256 || "N/A")}</li>
+      <li>EXIF: ${media ? (media.exifPresent ? "Detected" : "Not detected") : "N/A"}</li>
+      <li>C2PA: ${media ? (media.c2paPresent ? "Detected" : "Not detected") : "N/A"}</li>
+    </ul>
+    <h2>${escapeHtml(t("reportChecklist"))}</h2>
+    <table>
+      <thead><tr><th>Check</th><th>Result</th><th>Notes</th></tr></thead>
+      <tbody>
+        ${report.checklist.map((item) => `
+          <tr>
+            <td>${escapeHtml(item.label)}</td>
+            <td>${escapeHtml(getChecklistLabel(item.result))}</td>
+            <td>${escapeHtml(item.note)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 
 function getStatusLabel(status) {
@@ -1604,6 +1830,17 @@ function trackEvent(name, properties = {}) {
   syncEvent(name, properties);
 }
 
+function trackCheckStarted() {
+  if (hasTrackedCheckStarted) return;
+  hasTrackedCheckStarted = true;
+  trackEvent("check_started", {
+    platform: platformInput.value,
+    aiInvolvement: involvementInput.value,
+    hasImage: Boolean(imageFileInput.files[0]),
+    copyLength: publishCopyInput.value.trim().length,
+  });
+}
+
 function getAnalyticsEvents() {
   try {
     return JSON.parse(localStorage.getItem(ANALYTICS_KEY) || "[]");
@@ -1648,6 +1885,12 @@ function renderAnalytics() {
   metricRiskRate.textContent = `${riskRate}%`;
   adminDataStatus.textContent = t("localStatsReady");
 
+  renderBarChart(
+    funnelChart,
+    buildLocalFunnelCounts(events, visitCount),
+    getFunnelLabels(),
+    t("noEvents"),
+  );
   renderBarChart(
     platformChart,
     countProperty(events, "report_generated", "platform"),
@@ -1750,6 +1993,7 @@ function renderRemoteAnalytics(stats) {
   adminDataStatus.textContent = t("remoteStatsReady");
 
   renderBarChart(platformChart, rowsToCounts(stats.platformRows || []), getPlatformLabels(), t("noReportData"));
+  renderBarChart(funnelChart, buildRemoteFunnelCounts(stats.funnel || {}, visitCount), getFunnelLabels(), t("noEvents"));
   renderBarChart(involvementChart, rowsToCounts(stats.involvementRows || []), getInvolvementLabels(), t("noInvolvementData"));
   renderBarChart(ipChart, rowsToCounts(stats.ipRows || [], "ip"), {}, t("noIpData"));
   renderTrendChart(dailyTrendChart, stats.dailyRows || [], t("noTrendData"));
@@ -1850,6 +2094,36 @@ function getInvolvementLabels() {
 
 function getStatusLabels() {
   return Object.fromEntries(Object.keys(statusLabelKeys).map((key) => [key, t(statusLabelKeys[key]) || key]));
+}
+
+function getFunnelLabels() {
+  return {
+    visits: t("funnelVisits"),
+    started: t("funnelStarted"),
+    reports: t("funnelReports"),
+    markdown: t("funnelMarkdown"),
+    pdf: t("funnelPdf"),
+  };
+}
+
+function buildLocalFunnelCounts(events, visitCount) {
+  return {
+    visits: visitCount,
+    started: countByName(events, "check_started"),
+    reports: countByName(events, "report_generated"),
+    markdown: countByName(events, "report_downloaded"),
+    pdf: countByName(events, "report_pdf_downloaded"),
+  };
+}
+
+function buildRemoteFunnelCounts(funnel, visitCount) {
+  return {
+    visits: visitCount,
+    started: Number(funnel.started || 0),
+    reports: Number(funnel.reports || 0),
+    markdown: Number(funnel.markdown || 0),
+    pdf: Number(funnel.pdf || 0),
+  };
 }
 
 function getRuleStrictnessLabel(value) {

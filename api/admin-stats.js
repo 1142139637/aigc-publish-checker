@@ -48,6 +48,7 @@ module.exports = async function handler(request, response) {
     const pool = getPool();
     const [
       overview,
+      funnel,
       content,
       traffic,
       platformRows,
@@ -67,6 +68,15 @@ module.exports = async function handler(request, response) {
           (select count(*)::int from submissions where ${filterSql}) as submissions,
           (select count(*)::int from events where event_name = 'report_generated' and ${filterSql}) as reports,
           (select count(distinct ip)::int from visits where ip <> '' and ${filterSql}) as unique_ips
+      `, params),
+      pool.query(`
+        select
+          count(*) filter (where event_name = 'check_started')::int as started,
+          count(*) filter (where event_name = 'report_generated')::int as reports,
+          count(*) filter (where event_name = 'report_downloaded')::int as markdown,
+          count(*) filter (where event_name = 'report_pdf_downloaded')::int as pdf
+        from events
+        where ${filterSql}
       `, params),
       pool.query(`
         select
@@ -193,6 +203,7 @@ module.exports = async function handler(request, response) {
       ok: true,
       range: range.key,
       overview: overview.rows[0],
+      funnel: funnel.rows[0],
       content: content.rows[0],
       traffic: traffic.rows[0],
       platformRows: platformRows.rows,

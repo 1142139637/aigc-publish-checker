@@ -162,6 +162,7 @@
             <div class="actions">
               <button type="submit" class="primary" data-i18n="generateReport">生成报告</button>
               <button type="button" id="clearButton" class="secondary" data-i18n="clear">清空</button>
+              <button type="button" id="historyButton" class="secondary" data-i18n="viewHistory">History</button>
             </div>
           </form>
 
@@ -205,9 +206,34 @@
 
               <div class="actions">
                 <button id="downloadButton" type="button" class="primary" data-i18n="downloadMarkdown">下载 Markdown</button>
+                <button id="downloadPdfButton" type="button" class="secondary" data-i18n="downloadPdf">Download PDF</button>
               </div>
             </div>
           </section>
+        </section>
+      </section>
+
+      <section id="historyPage" class="page">
+        <section class="panel history-panel">
+          <div class="panel-header">
+            <p class="eyebrow" data-i18n="historyEyebrow">History</p>
+            <h2 data-i18n="historyTitle">Report History</h2>
+            <p class="summary" data-i18n="historySummary">Review previous checks, filter by platform or risk, and reopen reports.</p>
+          </div>
+
+          <div class="history-filters">
+            <label>
+              <span data-i18n="targetPlatform">Target Platform</span>
+              <select id="historyPlatformFilter"></select>
+            </label>
+            <label>
+              <span data-i18n="historyRiskFilter">Risk Status</span>
+              <select id="historyRiskFilter"></select>
+            </label>
+            <button id="backFromHistoryButton" type="button" class="secondary" data-i18n="backToChecker">Back to Checker</button>
+          </div>
+
+          <div id="historyList" class="history-list"></div>
         </section>
       </section>
 
@@ -274,6 +300,12 @@
             </div>
 
             <div class="analysis-grid">
+              <div class="report-section">
+                <h3 data-i18n="funnelAnalytics">Conversion Funnel</h3>
+                <div id="funnelChart" class="bar-list"></div>
+              </div>
+
+
               <div class="report-section">
                 <h3 data-i18n="platformPreference">平台偏好</h3>
                 <div id="platformChart" class="bar-list"></div>
