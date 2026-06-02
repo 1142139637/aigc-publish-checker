@@ -3,7 +3,55 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Publish Readiness Checker</title>
+    <title>AI 内容发布前自查工具 | AIGC 标识合规检查与元数据报告</title>
+    <meta
+      name="description"
+      content="AI 内容发布前自查工具，帮助创作者和内容团队检查 AIGC 标识、AI 使用披露、图片元数据、C2PA Content Credentials，并生成可存档的发布前检查报告。"
+    />
+    <meta
+      name="keywords"
+      content="AI内容合规,AIGC标识,AI生成内容标识,AI内容发布前检查,AI披露文案,图片元数据检查,C2PA,Content Credentials,AI compliance checker,AIGC labeling,AI disclosure,metadata inspector"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://aigc-publish-checker-cz74.vercel.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aigc-publish-checker-cz74.vercel.app/" />
+    <meta property="og:title" content="AI 内容发布前自查工具" />
+    <meta
+      property="og:description"
+      content="检查 AI 使用披露、AIGC 标识、图片元数据和 Content Credentials，生成发布前检查报告。"
+    />
+    <meta property="og:site_name" content="AIGC Publish Readiness Checker" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AI 内容发布前自查工具" />
+    <meta
+      name="twitter:description"
+      content="面向创作者、品牌和内容团队的 AIGC 标识合规与元数据检查工具。"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AI 内容发布前自查工具",
+        "alternateName": "AIGC Publish Readiness Checker",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "url": "https://aigc-publish-checker-cz74.vercel.app/",
+        "description": "帮助创作者和内容团队在发布前检查 AI 使用披露、AIGC 标识、图片元数据和 Content Credentials，并生成检查报告。",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "AIGC labeling checklist",
+          "AI disclosure suggestion",
+          "Image metadata inspection",
+          "C2PA Content Credentials check",
+          "Markdown report export"
+        ]
+      }
+    </script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -26,6 +74,13 @@
       </header>
 
       <section id="checkerPage" class="page active">
+        <section class="seo-summary" aria-label="工具简介">
+          <h2>AI 内容发布前检查、AIGC 标识合规与图片元数据自查</h2>
+          <p>
+            这个工具面向创作者、品牌内容团队、代运营机构和电商商家，用于在发布 AI 辅助内容前检查
+            AI 使用披露、AIGC 标识、图片 EXIF 元数据、C2PA Content Credentials 和发布前留痕报告。
+          </p>
+        </section>
         <section class="workspace">
           <form id="checkForm" class="panel input-panel">
             <div class="panel-header">

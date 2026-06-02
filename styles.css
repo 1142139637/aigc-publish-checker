@@ -78,6 +78,22 @@ textarea {
   align-items: start;
 }
 
+.seo-summary {
+  margin-bottom: 20px;
+  max-width: 860px;
+}
+
+.seo-summary h2 {
+  margin-bottom: 8px;
+  font-size: 22px;
+}
+
+.seo-summary p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .analytics-layout {
   display: grid;
   gap: 20px;
