@@ -18,11 +18,11 @@ module.exports = async function handler(request, response) {
       latencyMs: Date.now() - startedAt,
       checkedAt: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch {
     response.status(500).json({
       ok: false,
       database: "unavailable",
-      message: error.message,
+      message: "Database unavailable",
       checkedAt: new Date().toISOString(),
     });
   }

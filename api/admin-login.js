@@ -1,14 +1,33 @@
-module.exports = function handler(request, response) {
+const {
+  ADMIN_RATE_LIMIT,
+  enforceRateLimit,
+  isAdminPassword,
+  readJson,
+  sendMethodNotAllowed,
+  sendPayloadTooLarge,
+  sendServerError,
+} = require("./_db");
+
+module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
-    response.setHeader("Allow", "POST");
-    response.status(405).json({ ok: false });
+    sendMethodNotAllowed(response);
     return;
   }
 
-  const expectedPassword = process.env.ADMIN_PASSWORD || "";
-  const providedPassword = request.body?.password || "";
+  if (enforceRateLimit(request, response, "admin-login", ADMIN_RATE_LIMIT)) return;
 
-  response.status(200).json({
-    ok: Boolean(expectedPassword) && providedPassword === expectedPassword,
-  });
+  try {
+    const body = await readJson(request);
+    const providedPassword = body.password || "";
+
+    response.status(200).json({
+      ok: isAdminPassword(providedPassword),
+    });
+  } catch (error) {
+    if (error.statusCode === 413) {
+      sendPayloadTooLarge(response);
+      return;
+    }
+    sendServerError(response);
+  }
 };

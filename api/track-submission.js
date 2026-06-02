@@ -1,4 +1,15 @@
-const { getClientInfo, getPool, readJson, sendMethodNotAllowed } = require("./_db");
+const {
+  MAX_SUBMISSION_BYTES,
+  SUBMISSION_RATE_LIMIT,
+  enforceRateLimit,
+  getClientInfo,
+  getPool,
+  readJson,
+  sanitizeSubmission,
+  sendMethodNotAllowed,
+  sendPayloadTooLarge,
+  sendServerError,
+} = require("./_db");
 
 module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
@@ -6,8 +17,10 @@ module.exports = async function handler(request, response) {
     return;
   }
 
+  if (enforceRateLimit(request, response, "track-submission", SUBMISSION_RATE_LIMIT)) return;
+
   try {
-    const body = await readJson(request);
+    const body = sanitizeSubmission(await readJson(request, { maxBytes: MAX_SUBMISSION_BYTES }));
     const client = getClientInfo(request);
     await getPool().query(
       `insert into submissions (
@@ -29,26 +42,30 @@ module.exports = async function handler(request, response) {
         language
       ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
       [
-        body.platform || "",
-        body.aiInvolvement || "",
-        body.status || "",
-        body.publishCopy || "",
-        Number(body.copyLength || 0),
-        Boolean(body.hasImage),
-        body.fileName || "",
-        body.fileType || "",
-        Number(body.fileSizeBytes || 0),
-        body.fileSha256 || "",
+        body.platform,
+        body.aiInvolvement,
+        body.status,
+        body.publishCopy,
+        body.copyLength,
+        body.hasImage,
+        body.fileName,
+        body.fileType,
+        body.fileSizeBytes,
+        body.fileSha256,
         client.ip,
         client.country,
         client.region,
         client.city,
         client.userAgent,
-        body.language || "",
+        body.language,
       ],
     );
     response.status(200).json({ ok: true });
   } catch (error) {
-    response.status(500).json({ ok: false, message: error.message });
+    if (error.statusCode === 413) {
+      sendPayloadTooLarge(response);
+      return;
+    }
+    sendServerError(response);
   }
 };

@@ -1,4 +1,12 @@
-const { getPool, readJson, sendMethodNotAllowed } = require("./_db");
+const {
+  ADMIN_RATE_LIMIT,
+  enforceRateLimit,
+  getPool,
+  isAdminPassword,
+  readJson,
+  sendMethodNotAllowed,
+  sendServerError,
+} = require("./_db");
 
 function getRange(value) {
   const key = ["today", "7d", "30d", "all"].includes(value) ? value : "7d";
@@ -25,9 +33,11 @@ module.exports = async function handler(request, response) {
     return;
   }
 
+  if (enforceRateLimit(request, response, "admin-stats", ADMIN_RATE_LIMIT)) return;
+
   try {
     const body = await readJson(request);
-    if (!process.env.ADMIN_PASSWORD || body.password !== process.env.ADMIN_PASSWORD) {
+    if (!isAdminPassword(body.password)) {
       response.status(401).json({ ok: false });
       return;
     }
@@ -196,7 +206,7 @@ module.exports = async function handler(request, response) {
       highRiskSubmissions: highRiskSubmissions.rows,
       recentEvents: recentEvents.rows,
     });
-  } catch (error) {
-    response.status(500).json({ ok: false, message: error.message });
+  } catch {
+    sendServerError(response);
   }
 };
